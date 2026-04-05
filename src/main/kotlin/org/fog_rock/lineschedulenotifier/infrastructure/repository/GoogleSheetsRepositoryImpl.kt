@@ -17,8 +17,8 @@
 package org.fog_rock.lineschedulenotifier.infrastructure.repository
 
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
-import org.fog_rock.frlineagent.domain.config.ProviderMode
-import org.fog_rock.frlineagent.domain.repository.SecretProvider
+import org.fog_rock.frlineagent.core.domain.config.ProviderMode
+import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.fog_rock.lineschedulenotifier.infrastructure.internal.cloud.GoogleSheetsCloudRepository
 import org.fog_rock.lineschedulenotifier.infrastructure.internal.mock.MockSheetsRepository

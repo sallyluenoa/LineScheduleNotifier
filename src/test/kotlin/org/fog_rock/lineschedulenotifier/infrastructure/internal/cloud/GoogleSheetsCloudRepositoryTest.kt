@@ -20,7 +20,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
-import org.fog_rock.frlineagent.domain.repository.SecretProvider
+import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

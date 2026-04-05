@@ -16,8 +16,8 @@
 
 package org.fog_rock.lineschedulenotifier.domain.config
 
-import org.fog_rock.frlineagent.domain.config.CoreAppConfig
-import org.fog_rock.frlineagent.domain.config.ProviderMode
+import org.fog_rock.frlineagent.core.domain.config.CoreAppConfig
+import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 
 /**
  * An interface for managing the integration mode with external services.

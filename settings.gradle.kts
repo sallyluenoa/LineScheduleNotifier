@@ -20,5 +20,13 @@ rootProject.name = "LineScheduleNotifier"
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/SallyLueNoa/FRLineAgent")
+            credentials {
+                username = System.getenv("GITHUB_USER")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }

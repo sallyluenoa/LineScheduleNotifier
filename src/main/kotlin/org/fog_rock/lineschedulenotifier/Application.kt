@@ -18,7 +18,7 @@ package org.fog_rock.lineschedulenotifier
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import org.fog_rock.frlineagent.plugin.FRLineAgent
+import org.fog_rock.frlineagent.core.plugin.FRLineAgent
 import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
 import org.fog_rock.lineschedulenotifier.infrastructure.config.KtorAppConfig
 import org.fog_rock.lineschedulenotifier.plugins.appModule

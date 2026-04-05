@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.google.oauth.client.jetty)
     implementation(libs.google.sheets.api)
     implementation(libs.bundles.line.bot)
+    implementation(libs.fr.line.agent.core)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.junit.jupiter.api)

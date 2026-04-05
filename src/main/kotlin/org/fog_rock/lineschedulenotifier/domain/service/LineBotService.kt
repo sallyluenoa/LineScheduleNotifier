@@ -16,14 +16,14 @@
 
 package org.fog_rock.lineschedulenotifier.domain.service
 
-import org.fog_rock.frlineagent.domain.model.push.Notification
-import org.fog_rock.frlineagent.domain.model.webhook.EventType
-import org.fog_rock.frlineagent.domain.model.webhook.LineWebhookEvent
-import org.fog_rock.frlineagent.domain.model.webhook.MessageType
-import org.fog_rock.frlineagent.domain.model.webhook.SourceType
-import org.fog_rock.frlineagent.domain.service.AbstractLineBotService
-import org.fog_rock.frlineagent.domain.service.LineClient
-import org.fog_rock.frlineagent.domain.service.SignatureVerifier
+import org.fog_rock.frlineagent.core.domain.model.push.Notification
+import org.fog_rock.frlineagent.core.domain.model.webhook.EventType
+import org.fog_rock.frlineagent.core.domain.model.webhook.LineWebhookEvent
+import org.fog_rock.frlineagent.core.domain.model.webhook.MessageType
+import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
+import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
+import org.fog_rock.frlineagent.core.domain.service.LineClient
+import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.slf4j.LoggerFactory
 

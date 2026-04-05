@@ -18,7 +18,7 @@ package org.fog_rock.lineschedulenotifier.infrastructure.config
 
 import io.ktor.server.config.ApplicationConfig
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
-import org.fog_rock.frlineagent.domain.config.ProviderMode
+import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 
 /**
  * A class that reads AppConfig from a Ktor configuration file.

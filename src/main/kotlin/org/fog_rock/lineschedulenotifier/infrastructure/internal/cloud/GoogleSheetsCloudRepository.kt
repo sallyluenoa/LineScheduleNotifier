@@ -24,7 +24,7 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import java.io.ByteArrayInputStream
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
-import org.fog_rock.frlineagent.domain.repository.SecretProvider
+import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.slf4j.LoggerFactory
 

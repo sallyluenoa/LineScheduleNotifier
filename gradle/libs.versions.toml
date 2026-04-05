@@ -15,6 +15,7 @@
 #
 
 [versions]
+fr-line-agent-core = "1.0.0-alpha.2"
 kotlin = "2.2.21"
 ktor = "3.3.2"
 koin = "4.1.1"
@@ -30,6 +31,7 @@ junit-jupiter = "6.0.2"
 mockk = "1.14.9"
 
 [libraries]
+fr-line-agent-core = { module = "org.fog-rock:fr-line-agent-core", version.ref = "fr-line-agent-core" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }

@@ -1,0 +1,23 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="LineScheduleNotifier App" type="KtorApplicationConfigurationType" factoryName="Ktor">
+    <envs>
+      <env name="PROJECT_NUMBER" value="111111111111" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="io.ktor.server.netty.EngineMain" />
+    <module name="LineScheduleNotifier.main" />
+    <option name="PROGRAM_PARAMETERS" value="-config=src/main/resources/application.yaml -config=src/main/resources/application-local.yaml" />
+    <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
+    <option name="alternativeJrePath" />
+    <option name="alternativeJrePathEnabled" value="false" />
+    <option name="includeProvidedScope" value="false" />
+    <option name="mainClass" value="io.ktor.server.netty.EngineMain" />
+    <option name="passParentEnvs" value="true" />
+    <option name="programParameters" value="-config=src/main/resources/application.yaml -config=src/main/resources/application-local.yaml" />
+    <option name="shortenCommandLine" />
+    <option name="vmParameters" />
+    <option name="workingDirectory" value="$ProjectFileDir$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

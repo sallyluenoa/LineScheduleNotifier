@@ -14,23 +14,8 @@
 # limitations under the License.
 #
 
-ktor:
-  application:
-    modules:
-      - org.fog_rock.frlineagent.sampleapp.ApplicationKt.module
-  deployment:
-    port: 8080
 app:
-  name: "FRLineAgent"
   provider:
-    secret_manager: "cloud"
-    spreadsheet: "cloud"
-    line_api: "cloud"
-  google_cloud:
-    project_number: ${PROJECT_NUMBER}
-    credentials_key: "GOOGLE_API_CREDENTIALS"
-  google_sheets:
-    spreadsheet_id_key: "GOOGLE_SPREADSHEET_ID"
-  line_bot:
-    channel_access_token_key: "LINE_CHANNEL_ACCESS_TOKEN"
-    channel_secret_key: "LINE_CHANNEL_SECRET"
+    secret_manager: "mock"
+    spreadsheet: "mock"
+    line_api: "mock"

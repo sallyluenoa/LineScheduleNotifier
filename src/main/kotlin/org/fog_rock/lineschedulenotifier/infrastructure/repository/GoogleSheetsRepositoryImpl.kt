@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.infrastructure.repository
+package org.fog_rock.lineschedulenotifier.infrastructure.repository
 
-import org.fog_rock.frlineagent.sampleapp.domain.config.AppConfig
-import org.fog_rock.frlineagent.core.domain.config.ProviderMode
-import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
-import org.fog_rock.frlineagent.sampleapp.domain.repository.SheetsRepository
-import org.fog_rock.frlineagent.sampleapp.infrastructure.internal.cloud.GoogleSheetsCloudRepository
-import org.fog_rock.frlineagent.sampleapp.infrastructure.internal.mock.MockSheetsRepository
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.frlineagent.domain.config.ProviderMode
+import org.fog_rock.frlineagent.domain.repository.SecretProvider
+import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
+import org.fog_rock.lineschedulenotifier.infrastructure.internal.cloud.GoogleSheetsCloudRepository
+import org.fog_rock.lineschedulenotifier.infrastructure.internal.mock.MockSheetsRepository
 
 class GoogleSheetsRepositoryImpl(
     config: AppConfig,
@@ -35,3 +35,4 @@ class GoogleSheetsRepositoryImpl(
 
     override fun fetchSheetData(range: String): List<List<Any>> = repository.fetchSheetData(range)
 }
+

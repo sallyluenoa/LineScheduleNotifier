@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.plugins
+package org.fog_rock.lineschedulenotifier.plugins
 
 import io.ktor.server.application.Application
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
-import org.fog_rock.frlineagent.sampleapp.presentation.PushTriggerRoute
-import org.fog_rock.frlineagent.sampleapp.presentation.WebhookRoute
+import org.fog_rock.lineschedulenotifier.presentation.PushTriggerRoute
+import org.fog_rock.lineschedulenotifier.presentation.WebhookRoute
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.infrastructure.internal.mock
+package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

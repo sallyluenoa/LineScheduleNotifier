@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.infrastructure.internal.cloud
+package org.fog_rock.lineschedulenotifier.infrastructure.internal.cloud
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -23,9 +23,9 @@ import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import java.io.ByteArrayInputStream
-import org.fog_rock.frlineagent.sampleapp.domain.config.AppConfig
-import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
-import org.fog_rock.frlineagent.sampleapp.domain.repository.SheetsRepository
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.frlineagent.domain.repository.SecretProvider
+import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.slf4j.LoggerFactory
 
 internal class GoogleSheetsCloudRepository(

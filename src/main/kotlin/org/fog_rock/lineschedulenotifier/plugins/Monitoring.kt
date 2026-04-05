@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.plugins
+package org.fog_rock.lineschedulenotifier.plugins
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install

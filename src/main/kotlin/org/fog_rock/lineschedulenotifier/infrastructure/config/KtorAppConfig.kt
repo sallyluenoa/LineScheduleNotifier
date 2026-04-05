@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.infrastructure.config
+package org.fog_rock.lineschedulenotifier.infrastructure.config
 
 import io.ktor.server.config.ApplicationConfig
-import org.fog_rock.frlineagent.sampleapp.domain.config.AppConfig
-import org.fog_rock.frlineagent.core.domain.config.ProviderMode
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.frlineagent.domain.config.ProviderMode
 
 /**
  * A class that reads AppConfig from a Ktor configuration file.
  */
-class KtorAppConfig(config: ApplicationConfig) : AppConfig {
+class KtorAppConfig(config: ApplicationConfig, isDevelopment: Boolean = false) : AppConfig {
 
     override val name: String =
         config.property("app.name").getString()

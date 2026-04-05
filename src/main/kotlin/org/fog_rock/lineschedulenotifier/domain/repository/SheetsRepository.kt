@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.domain.repository
+package org.fog_rock.lineschedulenotifier.domain.repository
 
 /**
  * Interface for accessing Google Sheets data.

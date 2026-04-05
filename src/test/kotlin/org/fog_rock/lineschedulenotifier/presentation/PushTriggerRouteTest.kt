@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.presentation
+package org.fog_rock.lineschedulenotifier.presentation
 
 import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
@@ -25,7 +25,7 @@ import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
 import io.mockk.mockk
-import org.fog_rock.frlineagent.sampleapp.domain.service.LineBotService
+import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
 import org.junit.jupiter.api.Test
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin

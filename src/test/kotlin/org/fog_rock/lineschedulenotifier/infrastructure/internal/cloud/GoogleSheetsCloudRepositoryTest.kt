@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.infrastructure.internal.cloud
+package org.fog_rock.lineschedulenotifier.infrastructure.internal.cloud
 
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
-import org.fog_rock.frlineagent.sampleapp.domain.config.AppConfig
-import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.frlineagent.domain.repository.SecretProvider
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp
+package org.fog_rock.lineschedulenotifier
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import org.fog_rock.frlineagent.core.plugin.FRLineAgent
-import org.fog_rock.frlineagent.sampleapp.domain.service.LineBotService
-import org.fog_rock.frlineagent.sampleapp.infrastructure.config.KtorAppConfig
-import org.fog_rock.frlineagent.sampleapp.plugins.sampleAppModule
-import org.fog_rock.frlineagent.sampleapp.plugins.configureMonitoring
-import org.fog_rock.frlineagent.sampleapp.plugins.configureRouting
-import org.fog_rock.frlineagent.sampleapp.plugins.configureSerialization
+import org.fog_rock.frlineagent.plugin.FRLineAgent
+import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
+import org.fog_rock.lineschedulenotifier.infrastructure.config.KtorAppConfig
+import org.fog_rock.lineschedulenotifier.plugins.appModule
+import org.fog_rock.lineschedulenotifier.plugins.configureMonitoring
+import org.fog_rock.lineschedulenotifier.plugins.configureRouting
+import org.fog_rock.lineschedulenotifier.plugins.configureSerialization
 
 fun main(args: Array<String>): Unit =
     io.ktor.server.netty.EngineMain.main(args)
 
 fun Application.module() {
-    val config = KtorAppConfig(environment.config)
+    val config = KtorAppConfig(environment.config, true)
 
     install(FRLineAgent) {
         secretManagerMode = config.secretManagerMode
@@ -39,7 +39,7 @@ fun Application.module() {
         lineBotChannelSecretKey = config.lineBotChannelSecretKey
         lineBotChannelAccessTokenKey = config.lineBotChannelAccessTokenKey
         lineBotService = LineBotService::class
-        appModule = sampleAppModule(this@module)
+        appModule = appModule(this@module)
     }
 
     configureMonitoring()

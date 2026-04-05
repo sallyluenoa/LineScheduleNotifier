@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.plugins
+package org.fog_rock.lineschedulenotifier.plugins
 
 import io.ktor.server.application.Application
-import org.fog_rock.frlineagent.sampleapp.domain.config.AppConfig
-import org.fog_rock.frlineagent.sampleapp.domain.repository.SheetsRepository
-import org.fog_rock.frlineagent.sampleapp.domain.service.LineBotService
-import org.fog_rock.frlineagent.sampleapp.infrastructure.config.KtorAppConfig
-import org.fog_rock.frlineagent.sampleapp.infrastructure.repository.GoogleSheetsRepositoryImpl
-import org.fog_rock.frlineagent.sampleapp.presentation.PushTriggerRoute
-import org.fog_rock.frlineagent.sampleapp.presentation.WebhookRoute
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
+import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
+import org.fog_rock.lineschedulenotifier.infrastructure.config.KtorAppConfig
+import org.fog_rock.lineschedulenotifier.infrastructure.repository.GoogleSheetsRepositoryImpl
+import org.fog_rock.lineschedulenotifier.presentation.PushTriggerRoute
+import org.fog_rock.lineschedulenotifier.presentation.WebhookRoute
 import org.koin.dsl.module
 
 /**
  * A Koin module for application-specific dependencies.
  */
-fun sampleAppModule(app: Application) = module {
+fun appModule(app: Application) = module {
     single<AppConfig> { KtorAppConfig(app.environment.config) }
     single<SheetsRepository> { GoogleSheetsRepositoryImpl(get(), get()) }
     single { LineBotService(get(), get(), get()) }

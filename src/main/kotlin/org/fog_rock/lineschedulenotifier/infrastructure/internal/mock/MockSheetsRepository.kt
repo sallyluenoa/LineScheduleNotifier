@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.infrastructure.internal.mock
+package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
 
-import org.fog_rock.frlineagent.sampleapp.domain.repository.SheetsRepository
+import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.slf4j.LoggerFactory
 
 internal class MockSheetsRepository : SheetsRepository {

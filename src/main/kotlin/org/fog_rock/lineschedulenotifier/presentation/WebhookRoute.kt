@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.fog_rock.frlineagent.sampleapp.presentation
+package org.fog_rock.lineschedulenotifier.presentation
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.header
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
-import org.fog_rock.frlineagent.sampleapp.domain.service.LineBotService
+import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
 import org.slf4j.LoggerFactory
 
 /**

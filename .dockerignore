@@ -1,0 +1,59 @@
+# Gradle build artifacts and cache
+.gradle/
+build/
+out/
+.kotlin/
+bin/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+.github/
+.editorconfig
+
+# IDE settings
+.idea/
+.run/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.springBeans
+.sts4-cache/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Container orchestration
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Local configuration and logs
+.env
+.env.*
+local.properties
+*.log
+
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Documentation
+docs/
+*.md
+*.txt
+LICENSE

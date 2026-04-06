@@ -28,7 +28,7 @@ services:
         - PROJECT_NUMBER=${PROJECT_NUMBER:-111111111111}
 
     # Name the container to be executed.
-    container_name: frlineagent_local
+    container_name: lineschedulenotifier_local
 
     # Map host port 8080 to container port 8080.
     # This allows access to the application at http://localhost:8080.
@@ -37,7 +37,7 @@ services:
 
     # Mount local resources to the container to access configuration files.
     volumes:
-      - ./fr-line-agent-sample-app/src/main/resources:/app/resources
+      - ./src/main/resources:/app/resources
       - ~/.config/gcloud/application_default_credentials.json:/app/gcp-credentials.json:ro
 
     # Use mapping style for environment variables.

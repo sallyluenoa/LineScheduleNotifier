@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 env:
-  SERVICE: 'fr-line-agent'
+  SERVICE: 'line-schedule-notifier'
   PROJECT_ID: '${{ vars.GCP_PROJECT_ID_DEV }}'
   PROJECT_NUMBER: '${{ vars.GCP_PROJECT_NUMBER_DEV }}'
   REGION: '${{ vars.GCP_REGION_DEV }}'

@@ -52,4 +52,4 @@ jobs:
 
       - name: Verify build artifacts
         # Ensure the Fat JAR is created as expected by the Dockerfile
-        run: ls -l fr-line-agent-sample-app/build/libs/fr-line-agent-sample-app-*-all.jar
+        run: ls -l build/libs/LineScheduleNotifier-*-all.jar

@@ -17,11 +17,11 @@
 ktor:
   application:
     modules:
-      - org.fog_rock.frlineagent.sampleapp.ApplicationKt.module
+      - org.fog_rock.lineschedulenotifier.ApplicationKt.module
   deployment:
-    port: 8080
+    port: 8081
 app:
-  name: "FRLineAgent"
+  name: "LineScheduleNotifier"
   provider:
     secret_manager: "cloud"
     spreadsheet: "cloud"

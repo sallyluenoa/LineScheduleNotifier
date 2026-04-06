@@ -1,0 +1,83 @@
+#
+# Copyright (c) 2026 SallyLueNoa
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+[versions]
+fr-line-agent-core = "1.0.0-alpha.2"
+kotlin = "2.2.21"
+ktor = "3.3.2"
+koin = "4.1.1"
+logback = "1.5.25"
+google-cloud-secretmanager = "2.83.0"
+google-api-client = "2.8.1"
+google-oauth-client = "1.39.0"
+google-sheets-api = "v4-rev20251110-2.0.0"
+line-bot-sdk = "9.14.0"
+kotlinx-coroutines = "1.10.2"
+kotlinx-serialization-json = "1.10.0"
+junit-jupiter = "6.0.2"
+mockk = "1.14.9"
+
+[libraries]
+fr-line-agent-core = { module = "org.fog-rock:fr-line-agent-core", version.ref = "fr-line-agent-core" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
+koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+google-cloud-secretmanager = { module = "com.google.cloud:google-cloud-secretmanager", version.ref = "google-cloud-secretmanager" }
+google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "google-api-client" }
+google-oauth-client-jetty = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "google-oauth-client" }
+google-sheets-api = { module = "com.google.apis:google-api-services-sheets", version.ref = "google-sheets-api" }
+line-bot-messaging = { module = "com.linecorp.bot:line-bot-messaging-api-client", version.ref = "line-bot-sdk" }
+line-bot-webhook = { module = "com.linecorp.bot:line-bot-webhook", version.ref = "line-bot-sdk" }
+line-bot-parser = { module = "com.linecorp.bot:line-bot-parser", version.ref = "line-bot-sdk" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-jupiter" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+[bundles]
+ktor-server = [
+    "ktor-server-core",
+    "ktor-server-content-negotiation",
+    "ktor-serialization-kotlinx-json",
+    "ktor-server-call-logging",
+    "ktor-server-netty",
+    "ktor-server-config-yaml"
+]
+koin = [
+    "koin-ktor",
+    "koin-logger-slf4j"
+]
+line-bot = [
+    "line-bot-messaging",
+    "line-bot-webhook",
+    "line-bot-parser"
+]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+maven-publish = { id = "maven-publish" }

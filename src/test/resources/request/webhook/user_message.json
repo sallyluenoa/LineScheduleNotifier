@@ -1,0 +1,24 @@
+{
+  "destination": "UxxxxxxxxxxxxxxBOTIDxxxxxxxxxxxxxxx",
+  "events": [
+    {
+      "type": "message",
+      "message": {
+        "type": "text",
+        "id": "12345678901234",
+        "text": "Hello World!"
+      },
+      "webhookEventId": "01GXXXXXXXXXXXXXXXXX",
+      "deliveryContext": {
+        "isRedelivery": false
+      },
+      "timestamp": 1678886400000,
+      "source": {
+        "type": "user",
+        "userId": "Uyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+      },
+      "replyToken": "dummy-reply-token-xxxxxxxxxxxx",
+      "mode": "active"
+    }
+  ]
+}

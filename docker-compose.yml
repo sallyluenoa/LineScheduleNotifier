@@ -26,6 +26,8 @@ services:
       dockerfile: Dockerfile
       args:
         - PROJECT_NUMBER=${PROJECT_NUMBER:-111111111111}
+        - GITHUB_USER=${GITHUB_USER}
+        - GITHUB_TOKEN=${GITHUB_TOKEN}
 
     # Name the container to be executed.
     container_name: lineschedulenotifier_local

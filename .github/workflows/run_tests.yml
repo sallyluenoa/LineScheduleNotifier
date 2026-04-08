@@ -49,6 +49,9 @@ jobs:
       - name: Run tests with Gradle
         # Run build task which includes compiling, testing, and assembling the JAR
         run: ./gradlew --no-daemon build
+        env:
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify build artifacts
         # Ensure the Fat JAR is created as expected by the Dockerfile

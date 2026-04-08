@@ -43,6 +43,7 @@ docker-compose.*.yml
 .env
 .env.*
 local.properties
+github-credentials.txt
 *.log
 
 # NetBeans

@@ -26,8 +26,8 @@ services:
       dockerfile: Dockerfile
       args:
         - PROJECT_NUMBER=${PROJECT_NUMBER:-111111111111}
-        - GITHUB_USER=${GITHUB_USER}
-        - GITHUB_TOKEN=${GITHUB_TOKEN}
+      secrets:
+        - github_credentials
 
     # Name the container to be executed.
     container_name: lineschedulenotifier_local
@@ -49,3 +49,9 @@ services:
 
     # Override the default CMD to pass configuration arguments.
     command: ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar", "-config=/app/resources/application.yaml", "-config=/app/resources/application-local.yaml"]
+
+# Define secrets to be passed to the build.
+# These are sourced from a file in the project root.
+secrets:
+  github_credentials:
+    file: ./github-credentials.txt

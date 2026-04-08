@@ -19,9 +19,6 @@
 FROM amazoncorretto:21 AS build
 WORKDIR /app
 
-ARG GITHUB_USER
-ARG GITHUB_TOKEN
-
 # Copy the Gradle executable and configuration files
 COPY gradlew gradlew.bat ./
 COPY gradle ./gradle
@@ -31,13 +28,19 @@ COPY build.gradle.kts settings.gradle.kts gradle.properties ./
 RUN chmod +x gradlew
 
 # Download dependencies separately to leverage Docker layer caching
-RUN GITHUB_USER=${GITHUB_USER} GITHUB_TOKEN=${GITHUB_TOKEN} ./gradlew --no-daemon dependencies
+# Use a single build secret containing both credentials
+RUN --mount=type=secret,id=github_credentials,dst=/run/secrets/credentials \
+    . /run/secrets/credentials && \
+    ./gradlew --no-daemon dependencies
 
 # Copy the source code
 COPY src ./src
 
 # Build the application FAT JAR, skipping tests for faster CI/CD
-RUN GITHUB_USER=${GITHUB_USER} GITHUB_TOKEN=${GITHUB_TOKEN} ./gradlew --no-daemon build -x test
+# Use a single build secret containing both credentials
+RUN --mount=type=secret,id=github_credentials,dst=/run/secrets/credentials \
+    . /run/secrets/credentials && \
+    ./gradlew --no-daemon build -x test
 
 # Stage 2: Runtime stage
 # Using a lightweight Alpine-based JRE for the final image

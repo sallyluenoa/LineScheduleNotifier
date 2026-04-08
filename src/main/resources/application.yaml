@@ -19,7 +19,7 @@ ktor:
     modules:
       - org.fog_rock.lineschedulenotifier.ApplicationKt.module
   deployment:
-    port: 8081
+    port: 8080
 app:
   name: "LineScheduleNotifier"
   provider:

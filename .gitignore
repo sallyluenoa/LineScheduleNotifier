@@ -39,6 +39,7 @@ out/
 .env
 .env.*
 local.properties
+github-credentials.txt
 
 # Logs
 *.log

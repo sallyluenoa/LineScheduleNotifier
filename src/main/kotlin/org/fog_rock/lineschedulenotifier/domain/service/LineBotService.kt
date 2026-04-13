@@ -16,6 +16,10 @@
 
 package org.fog_rock.lineschedulenotifier.domain.service
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+
 import org.fog_rock.frlineagent.core.domain.model.push.Notification
 import org.fog_rock.frlineagent.core.domain.model.webhook.EventType
 import org.fog_rock.frlineagent.core.domain.model.webhook.LineWebhookEvent
@@ -42,6 +46,8 @@ class LineBotService(
         private const val SHEET_RANGE_WEBHOOK = "webhook"
         // Default range for scheduled push notifications (To, Message)
         private const val SHEET_RANGE_PUSH = "push"
+        // Default range for schedule data
+        private const val SHEET_RANGE_SCHEDULE = "schedule"
     }
 
     override fun createReplyMessage(event: LineWebhookEvent.Event, botId: String): String? {
@@ -62,23 +68,83 @@ class LineBotService(
     }
 
     override fun createPushNotifications(): List<Notification> {
-        // Fetch sheet data
-        val sheetData = sheetsRepo.fetchSheetData(SHEET_RANGE_PUSH)
-        if (sheetData.isEmpty()) {
-            logger.info("No data found for scheduled push.")
+        // Fetch recipient list
+        val recipients = fetchRecipients()
+        if (recipients.isEmpty()) {
+            logger.info("No recipients found.")
             return emptyList()
         }
 
-        // Parse & Extract Notification Data
-        return sheetData.mapNotNull { row ->
-            if (row.size >= 2) {
-                Notification(
-                    to = row[0].toString(),
-                    message = row[1].toString()
-                )
+        // Get today's schedule message
+        val message = createTodayScheduleMessage()
+        if (message.isNullOrBlank()) {
+            logger.info("No schedule for today or message is blank.")
+            return emptyList()
+        }
+
+        // Send the message to each recipient
+        return recipients.map { to ->
+            Notification(to = to, message = message)
+        }
+    }
+
+    private fun fetchRecipients(): List<String> {
+        val sheetData = sheetsRepo.fetchSheetData(SHEET_RANGE_PUSH)
+        if (sheetData.size <= 1) { // Check for header
+            logger.info("No recipient data or only header found in sheet.")
+            return emptyList()
+        }
+        // Skip header row and map to recipient ID
+        return sheetData.drop(1).mapNotNull { row ->
+            if (row.isNotEmpty() && row[0].toString().isNotBlank()) {
+                row[0].toString()
             } else {
                 null
             }
+        }
+    }
+
+    private fun createTodayScheduleMessage(): String? {
+        val sheetData = sheetsRepo.fetchSheetData(SHEET_RANGE_SCHEDULE)
+        if (sheetData.size <= 1) { // Needs at least a header and one data row
+            logger.info("No schedule data or only header found in sheet.")
+            return null
+        }
+
+        val today = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+
+        // Find schedule for today
+        val scheduleRow = sheetData.drop(1).find { row ->
+            if (row.isEmpty() || row[0].toString().isBlank()) return@find false
+            try {
+                val date = LocalDate.parse(row[0].toString(), formatter)
+                date.isEqual(today)
+            } catch (e: DateTimeParseException) {
+                logger.warn("Failed to parse date: ${row[0]}", e)
+                false
+            }
+        }
+
+        return scheduleRow?.let {
+            if (it.size < 5) {
+                logger.warn("Schedule row has fewer than 5 columns: $it")
+                return@let null
+            }
+            // "Date, Day of the Week, Period, Events & Schedule, Items to Bring & Assignments"
+            val date = it.getOrNull(0)?.toString() ?: ""
+            val dayOfWeek = it.getOrNull(1)?.toString() ?: ""
+            val period = it.getOrNull(2)?.toString() ?: ""
+            val events = it.getOrNull(3)?.toString() ?: ""
+            val items = it.getOrNull(4)?.toString() ?: ""
+
+            """
+            [Today's Schedule]
+            Date: $date ($dayOfWeek)
+            Period: $period
+            Events & Schedule: $events
+            Items to Bring & Assignments: $items
+            """.trimIndent()
         }
     }
 

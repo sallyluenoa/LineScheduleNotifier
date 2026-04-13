@@ -51,6 +51,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
 }
 
 tasks.getByName<Jar>("shadowJar") {

@@ -18,6 +18,8 @@ package org.fog_rock.lineschedulenotifier.domain.service
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.serialization.json.Json
 import org.fog_rock.frlineagent.core.domain.model.webhook.EventType
@@ -27,9 +29,12 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class LineBotServiceTest {
 
@@ -53,6 +58,11 @@ class LineBotServiceTest {
         // `verify` is a suspend function, so we need to use `coEvery`
         every { verifier.verify(any(), any()) } returns true
         service = LineBotService(sheetsRepo, lineClient, verifier)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        unmockkStatic(LocalDate::class)
     }
 
     private fun createWebhookJson(event: LineWebhookEvent.Event): String {
@@ -180,27 +190,56 @@ class LineBotServiceTest {
     }
 
     @Test
-    fun testExecutePush_withValidData() {
+    fun testExecutePush_withTodaySchedule() {
         // Arrange
+        val today = LocalDate.of(2026, 4, 15)
+        mockkStatic(LocalDate::class)
+        every { LocalDate.now() } returns today
+        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+
         every { sheetsRepo.fetchSheetData("push") } returns listOf(
-            listOf("user1", "message1"),
-            listOf("user2", "message2")
+            listOf("to"), // Header
+            listOf("user1"),
+            listOf("user2")
         )
+        every { sheetsRepo.fetchSheetData("schedule") } returns listOf(
+            listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"), // Header
+            listOf("2026/04/14", "Tuesday", "4", "Event C", "Item C"),
+            listOf(today.format(formatter), "Wednesday", "5", "New Event", "New Item"),
+            listOf("2026/04/16", "Thursday", "6", "Event D", "Item D")
+        )
+
         every { lineClient.push(any(), any()) } returns Result.success(Unit)
+
+        val expectedMessage = """
+            [Today's Schedule]
+            Date: ${today.format(formatter)} (Wednesday)
+            Period: 5
+            Events & Schedule: New Event
+            Items to Bring & Assignments: New Item
+            """.trimIndent()
 
         // Act
         val result = service.executePush()
 
         // Assert
         assertTrue(result.isSuccess)
-        verify { lineClient.push("user1", "message1") }
-        verify { lineClient.push("user2", "message2") }
+        verify { lineClient.push("user1", expectedMessage) }
+        verify { lineClient.push("user2", expectedMessage) }
     }
 
     @Test
-    fun testExecutePush_withEmptyData() {
+    fun testExecutePush_withoutRecipients() {
         // Arrange
-        every { sheetsRepo.fetchSheetData("push") } returns emptyList()
+        val today = LocalDate.of(2026, 4, 15)
+        mockkStatic(LocalDate::class)
+        every { LocalDate.now() } returns today
+
+        every { sheetsRepo.fetchSheetData("push") } returns listOf(listOf("to")) // Header only
+        every { sheetsRepo.fetchSheetData("schedule") } returns listOf(
+            listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"), // Header
+            listOf("2026/04/15", "Wednesday", "5", "New Event", "New Item")
+        )
 
         // Act
         val result = service.executePush()
@@ -213,19 +252,63 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_withPartialFailure() {
         // Arrange
+        val today = LocalDate.of(2026, 4, 15)
+        mockkStatic(LocalDate::class)
+        every { LocalDate.now() } returns today
+        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+
         every { sheetsRepo.fetchSheetData("push") } returns listOf(
-            listOf("user1", "message1"),
-            listOf("user2", "message2")
+            listOf("to"), // Header
+            listOf("user1"),
+            listOf("user2")
         )
-        every { lineClient.push("user1", "message1") } returns Result.success(Unit)
-        every { lineClient.push("user2", "message2") } returns Result.failure(RuntimeException("Error"))
+        every { sheetsRepo.fetchSheetData("schedule") } returns listOf(
+            listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"), // Header
+            listOf(today.format(formatter), "Wednesday", "5", "New Event", "New Item")
+        )
+
+        val expectedMessage = """
+            [Today's Schedule]
+            Date: ${today.format(formatter)} (Wednesday)
+            Period: 5
+            Events & Schedule: New Event
+            Items to Bring & Assignments: New Item
+            """.trimIndent()
+
+        every { lineClient.push("user1", expectedMessage) } returns Result.success(Unit)
+        every { lineClient.push("user2", expectedMessage) } returns Result.failure(RuntimeException("Error"))
 
         // Act
         val result = service.executePush()
 
         // Assert
         assertTrue(result.isFailure)
-        verify { lineClient.push("user1", "message1") }
-        verify { lineClient.push("user2", "message2") }
+        verify { lineClient.push("user1", expectedMessage) }
+        verify { lineClient.push("user2", expectedMessage) }
+    }
+
+    @Test
+    fun testExecutePush_withoutTodaySchedule() {
+        // Arrange
+        val today = LocalDate.of(2026, 4, 15)
+        mockkStatic(LocalDate::class)
+        every { LocalDate.now() } returns today
+
+        every { sheetsRepo.fetchSheetData("push") } returns listOf(
+            listOf("to"), // Header
+            listOf("user1")
+        )
+        // Schedule for another day
+        every { sheetsRepo.fetchSheetData("schedule") } returns listOf(
+            listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"), // Header
+            listOf("2026/04/14", "Tuesday", "4", "Event C", "Item C")
+        )
+
+        // Act
+        val result = service.executePush()
+
+        // Assert
+        assertTrue(result.isSuccess)
+        verify(exactly = 0) { lineClient.push(any(), any()) }
     }
 }

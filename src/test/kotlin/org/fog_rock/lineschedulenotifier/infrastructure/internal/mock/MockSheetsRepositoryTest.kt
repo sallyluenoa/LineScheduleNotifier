@@ -16,20 +16,60 @@
 
 package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
 
-import org.junit.jupiter.api.Assertions
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class MockSheetsRepositoryTest {
 
-    @Test
-    fun testFetchSheetData() {
-        val repository = MockSheetsRepository()
-        val result = repository.fetchSheetData("A1:B2")
+    private lateinit var repository: MockSheetsRepository
 
+    @BeforeEach
+    fun setUp() {
+        repository = MockSheetsRepository()
+    }
+
+    @Test
+    fun testFetchSheetData_push() {
+        val result = repository.fetchSheetData("push")
         val expected = listOf(
-            listOf("Header1", "Header2"),
-            listOf("Value1", "Value2")
+            listOf("to"),
+            listOf("U_MOCK_ID_1"),
+            listOf("U_MOCK_ID_2")
         )
-        Assertions.assertEquals(expected, result)
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun testFetchSheetData_webhook() {
+        val result = repository.fetchSheetData("webhook")
+        val expected = listOf(
+            listOf("This is a mock reply message.")
+        )
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun testFetchSheetData_schedule() {
+        val result = repository.fetchSheetData("schedule")
+        // Check if all rows have 5 columns
+        assertTrue(result.all { it.size == 5 })
+        // Check header row
+        assertEquals(
+            listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"),
+            result[0]
+        )
+        // Check if today's data is included
+        val today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+        assertTrue(result.any { it[0] == today && it[1] == "Today" })
+    }
+
+    @Test
+    fun testFetchSheetData_unknown() {
+        val result = repository.fetchSheetData("unknown_range")
+        assertTrue(result.isEmpty())
     }
 }

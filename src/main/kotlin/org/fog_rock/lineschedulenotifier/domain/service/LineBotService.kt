@@ -29,6 +29,7 @@ import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
+import org.fog_rock.lineschedulenotifier.extension.isBetween
 import org.slf4j.LoggerFactory
 
 /**
@@ -48,6 +49,8 @@ class LineBotService(
         private const val SHEET_RANGE_PUSH = "push"
         // Default range for schedule data
         private const val SHEET_RANGE_SCHEDULE = "schedule"
+        // Date format used in the spreadsheet
+        private const val SHEET_DATE_FORMAT = "yyyy/MM/dd"
     }
 
     override fun createReplyMessage(event: LineWebhookEvent.Event, botId: String): String? {
@@ -111,16 +114,17 @@ class LineBotService(
             return null
         }
 
-        val startDate = LocalDate.now().plusDays(1)
-        val endDate = startDate.plusDays(6)
-        val sheetDateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        val today = LocalDate.now()
+        val startDate = today.plusDays(1)
+        val endDate = today.plusWeeks(1)
+        val sheetDateFormatter = DateTimeFormatter.ofPattern(SHEET_DATE_FORMAT)
 
         // Find and sort schedules for the upcoming week
         val scheduleRows = sheetData.drop(1).mapNotNull { row ->
             if (row.isEmpty() || row[0].toString().isBlank()) return@mapNotNull null
             try {
                 val date = LocalDate.parse(row[0].toString(), sheetDateFormatter)
-                if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+                if (date.isBetween(startDate, endDate)) {
                     date to row // Pair date and row for sorting
                 } else {
                     null

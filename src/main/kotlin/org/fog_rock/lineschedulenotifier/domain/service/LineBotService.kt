@@ -75,10 +75,10 @@ class LineBotService(
             return emptyList()
         }
 
-        // Get today's schedule message
-        val message = createTodayScheduleMessage()
+        // Get weekly schedule message
+        val message = createWeeklyScheduleMessage()
         if (message.isNullOrBlank()) {
-            logger.info("No schedule for today or message is blank.")
+            logger.info("No schedule for the upcoming week or message is blank.")
             return emptyList()
         }
 
@@ -104,48 +104,65 @@ class LineBotService(
         }
     }
 
-    private fun createTodayScheduleMessage(): String? {
+    private fun createWeeklyScheduleMessage(): String? {
         val sheetData = sheetsRepo.fetchSheetData(SHEET_RANGE_SCHEDULE)
         if (sheetData.size <= 1) { // Needs at least a header and one data row
             logger.info("No schedule data or only header found in sheet.")
             return null
         }
 
-        val today = LocalDate.now()
-        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        val startDate = LocalDate.now().plusDays(1)
+        val endDate = startDate.plusDays(6)
+        val sheetDateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
 
-        // Find schedule for today
-        val scheduleRow = sheetData.drop(1).find { row ->
-            if (row.isEmpty() || row[0].toString().isBlank()) return@find false
+        // Find and sort schedules for the upcoming week
+        val scheduleRows = sheetData.drop(1).mapNotNull { row ->
+            if (row.isEmpty() || row[0].toString().isBlank()) return@mapNotNull null
             try {
-                val date = LocalDate.parse(row[0].toString(), formatter)
-                date.isEqual(today)
+                val date = LocalDate.parse(row[0].toString(), sheetDateFormatter)
+                if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+                    date to row // Pair date and row for sorting
+                } else {
+                    null
+                }
             } catch (e: DateTimeParseException) {
-                logger.warn("Failed to parse date: ${row[0]}", e)
-                false
+                logger.warn("Failed to parse date from row: ${row[0]}", e)
+                null
             }
+        }.sortedBy { it.first }
+
+        if (scheduleRows.isEmpty()) {
+            logger.info("No schedule found for the upcoming week.")
+            return null
         }
 
-        return scheduleRow?.let {
-            if (it.size < 5) {
-                logger.warn("Schedule row has fewer than 5 columns: $it")
-                return@let null
-            }
-            // "Date, Day of the Week, Period, Events & Schedule, Items to Bring & Assignments"
-            val date = it.getOrNull(0)?.toString() ?: ""
-            val dayOfWeek = it.getOrNull(1)?.toString() ?: ""
-            val period = it.getOrNull(2)?.toString() ?: ""
-            val events = it.getOrNull(3)?.toString() ?: ""
-            val items = it.getOrNull(4)?.toString() ?: ""
+        val messageDateFormatter = DateTimeFormatter.ofPattern("M/d")
+        val message = StringBuilder("今週の予定です。\n\n")
 
-            """
-            [Today's Schedule]
-            Date: $date ($dayOfWeek)
-            Period: $period
-            Events & Schedule: $events
-            Items to Bring & Assignments: $items
-            """.trimIndent()
+        scheduleRows.forEach { (date, row) ->
+            val events = row.getOrNull(3)?.toString().orEmpty()
+            val items = row.getOrNull(4)?.toString().orEmpty()
+
+            // Skip if both events and items are blank
+            if (events.isBlank() && items.isBlank()) {
+                return@forEach
+            }
+
+            val dateStr = date.format(messageDateFormatter)
+            val dayOfWeek = row.getOrNull(1)?.toString().orEmpty()
+            val period = row.getOrNull(2)?.toString().orEmpty()
+
+            message.append("[$dateStr($dayOfWeek) $period]\n")
+            if (events.isNotBlank()) {
+                message.append("行事: $events\n")
+            }
+            if (items.isNotBlank()) {
+                message.append("持物: $items\n")
+            }
+            message.append("\n")
         }
+
+        return message.toString().trim()
     }
 
     private fun shouldReply(event: LineWebhookEvent.Event, botId: String): Boolean {

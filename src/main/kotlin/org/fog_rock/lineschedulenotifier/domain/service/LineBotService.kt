@@ -19,7 +19,6 @@ package org.fog_rock.lineschedulenotifier.domain.service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-
 import org.fog_rock.frlineagent.core.domain.model.push.Notification
 import org.fog_rock.frlineagent.core.domain.model.webhook.EventType
 import org.fog_rock.frlineagent.core.domain.model.webhook.LineWebhookEvent
@@ -28,6 +27,7 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
+import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.fog_rock.lineschedulenotifier.extension.isBetween
 import org.slf4j.LoggerFactory
@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory
  */
 class LineBotService(
     private val sheetsRepo: SheetsRepository,
+    private val messageProvider: MessageProvider,
     lineClient: LineClient,
     verifier: SignatureVerifier
 ) : AbstractLineBotService(lineClient, verifier) {
@@ -149,7 +150,9 @@ class LineBotService(
         }
 
         val messageDateFormatter = DateTimeFormatter.ofPattern("M/d")
-        val message = StringBuilder("今週の予定です。\n\n")
+        val message = StringBuilder()
+        message.append(messageProvider.getMessage("schedule.weekly.title"))
+        message.append("\n\n")
 
         scheduleRows.forEach { (date, row) ->
             val events = row.getOrNull(COL_SCHEDULE_EVENTS)?.toString().orEmpty()
@@ -166,10 +169,12 @@ class LineBotService(
 
             message.append("[$dateStr($dayOfWeek) $period]\n")
             if (events.isNotBlank()) {
-                message.append("行事: $events\n")
+                message.append(messageProvider.getMessage("schedule.weekly.events", events))
+                message.append("\n")
             }
             if (items.isNotBlank()) {
-                message.append("持物: $items\n")
+                message.append(messageProvider.getMessage("schedule.weekly.items", items))
+                message.append("\n")
             }
             message.append("\n")
         }

@@ -18,6 +18,7 @@ package org.fog_rock.lineschedulenotifier.plugins
 
 import io.ktor.server.application.Application
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
 import org.fog_rock.lineschedulenotifier.infrastructure.config.KtorAppConfig
@@ -25,14 +26,16 @@ import org.fog_rock.lineschedulenotifier.infrastructure.repository.GoogleSheetsR
 import org.fog_rock.lineschedulenotifier.presentation.PushTriggerRoute
 import org.fog_rock.lineschedulenotifier.presentation.WebhookRoute
 import org.koin.dsl.module
+import java.util.Locale
 
 /**
  * A Koin module for application-specific dependencies.
  */
 fun appModule(app: Application) = module {
     single<AppConfig> { KtorAppConfig(app.environment.config) }
+    single { MessageProvider("messages.LineBotMessages", Locale.JAPANESE) }
     single<SheetsRepository> { GoogleSheetsRepositoryImpl(get(), get()) }
-    single { LineBotService(get(), get(), get()) }
+    single { LineBotService(get(), get(), get(), get()) }
     single { WebhookRoute(get()) }
     single { PushTriggerRoute(get()) }
 }

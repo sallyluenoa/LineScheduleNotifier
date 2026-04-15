@@ -51,6 +51,13 @@ class LineBotService(
         private const val SHEET_RANGE_SCHEDULE = "schedule"
         // Date format used in the spreadsheet
         private const val SHEET_DATE_FORMAT = "yyyy/MM/dd"
+
+        // Column indices for the schedule sheet.
+        private const val COL_SCHEDULE_DATE = 0
+        private const val COL_SCHEDULE_DAY_OF_WEEK = 1
+        private const val COL_SCHEDULE_PERIOD = 2
+        private const val COL_SCHEDULE_EVENTS = 3
+        private const val COL_SCHEDULE_ITEMS = 4
     }
 
     override fun createReplyMessage(event: LineWebhookEvent.Event, botId: String): String? {
@@ -121,16 +128,17 @@ class LineBotService(
 
         // Find and sort schedules for the upcoming week
         val scheduleRows = sheetData.drop(1).mapNotNull { row ->
-            if (row.isEmpty() || row[0].toString().isBlank()) return@mapNotNull null
+            val dateStr = row.getOrNull(COL_SCHEDULE_DATE)?.toString().orEmpty()
+            if (dateStr.isBlank()) return@mapNotNull null
             try {
-                val date = LocalDate.parse(row[0].toString(), sheetDateFormatter)
+                val date = LocalDate.parse(dateStr, sheetDateFormatter)
                 if (date.isBetween(startDate, endDate)) {
                     date to row // Pair date and row for sorting
                 } else {
                     null
                 }
             } catch (e: DateTimeParseException) {
-                logger.warn("Failed to parse date from row: ${row[0]}", e)
+                logger.warn("Failed to parse date from row: $dateStr", e)
                 null
             }
         }.sortedBy { it.first }
@@ -144,8 +152,8 @@ class LineBotService(
         val message = StringBuilder("今週の予定です。\n\n")
 
         scheduleRows.forEach { (date, row) ->
-            val events = row.getOrNull(3)?.toString().orEmpty()
-            val items = row.getOrNull(4)?.toString().orEmpty()
+            val events = row.getOrNull(COL_SCHEDULE_EVENTS)?.toString().orEmpty()
+            val items = row.getOrNull(COL_SCHEDULE_ITEMS)?.toString().orEmpty()
 
             // Skip if both events and items are blank
             if (events.isBlank() && items.isBlank()) {
@@ -153,8 +161,8 @@ class LineBotService(
             }
 
             val dateStr = date.format(messageDateFormatter)
-            val dayOfWeek = row.getOrNull(1)?.toString().orEmpty()
-            val period = row.getOrNull(2)?.toString().orEmpty()
+            val dayOfWeek = row.getOrNull(COL_SCHEDULE_DAY_OF_WEEK)?.toString().orEmpty()
+            val period = row.getOrNull(COL_SCHEDULE_PERIOD)?.toString().orEmpty()
 
             message.append("[$dateStr($dayOfWeek) $period]\n")
             if (events.isNotBlank()) {

@@ -27,6 +27,7 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
+import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.fog_rock.lineschedulenotifier.extension.isBetween
@@ -50,8 +51,11 @@ class LineBotService(
         private const val SHEET_RANGE_PUSH = "push"
         // Default range for schedule data
         private const val SHEET_RANGE_SCHEDULE = "schedule"
+
         // Date format used in the spreadsheet
         private const val SHEET_DATE_FORMAT = "yyyy/MM/dd"
+        // Date format used in the message
+        private const val MSG_DATE_FORMAT = "M/d"
 
         // Column indices for the schedule sheet.
         private const val COL_SCHEDULE_DATE = 0
@@ -130,16 +134,18 @@ class LineBotService(
         // Find and sort schedules for the upcoming week
         val scheduleRows = sheetData.drop(1).mapNotNull { row ->
             val dateStr = row.getOrNull(COL_SCHEDULE_DATE)?.toString().orEmpty()
-            if (dateStr.isBlank()) return@mapNotNull null
-            try {
-                val date = LocalDate.parse(dateStr, sheetDateFormatter)
-                if (date.isBetween(startDate, endDate)) {
-                    date to row // Pair date and row for sorting
-                } else {
-                    null
-                }
+            if (dateStr.isBlank()) {
+                return@mapNotNull null
+            }
+            val date = try {
+                 LocalDate.parse(dateStr, sheetDateFormatter)
             } catch (e: DateTimeParseException) {
                 logger.warn("Failed to parse date from row: $dateStr", e)
+                return@mapNotNull null
+            }
+            if (date.isBetween(startDate, endDate)) {
+                date to row // Pair date and row for sorting
+            } else {
                 null
             }
         }.sortedBy { it.first }
@@ -149,9 +155,9 @@ class LineBotService(
             return null
         }
 
-        val messageDateFormatter = DateTimeFormatter.ofPattern("M/d")
+        val messageDateFormatter = DateTimeFormatter.ofPattern(MSG_DATE_FORMAT)
         val message = StringBuilder()
-        message.append(messageProvider.getMessage("schedule.weekly.title"))
+        message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_TITLE))
         message.append("\n\n")
 
         scheduleRows.forEach { (date, row) ->
@@ -168,12 +174,14 @@ class LineBotService(
             val period = row.getOrNull(COL_SCHEDULE_PERIOD)?.toString().orEmpty()
 
             message.append("[$dateStr($dayOfWeek) $period]\n")
-            if (events.isNotBlank()) {
-                message.append(messageProvider.getMessage("schedule.weekly.events", events))
-                message.append("\n")
-            }
+            val eventMessage = messageProvider.getMessage(
+                MessageKeys.SCHEDULE_WEEKLY_EVENTS,
+                events.ifBlank { messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_NONE) }
+            )
+            message.append(eventMessage)
+            message.append("\n")
             if (items.isNotBlank()) {
-                message.append(messageProvider.getMessage("schedule.weekly.items", items))
+                message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_ITEMS, items))
                 message.append("\n")
             }
             message.append("\n")

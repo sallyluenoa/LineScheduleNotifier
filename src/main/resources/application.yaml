@@ -22,6 +22,8 @@ ktor:
     port: 8080
 app:
   name: "LineScheduleNotifier"
+  locale:
+    language: "en"
   provider:
     secret_manager: "cloud"
     spreadsheet: "cloud"

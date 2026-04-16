@@ -33,7 +33,7 @@ import java.util.Locale
  */
 fun appModule(app: Application) = module {
     single<AppConfig> { KtorAppConfig(app.environment.config) }
-    single { MessageProvider("messages.LineBotMessages", Locale.JAPANESE) }
+    single { MessageProvider("messages.LineBotMessages", Locale.forLanguageTag(app.environment.config.property("app.locale.language").getString())) }
     single<SheetsRepository> { GoogleSheetsRepositoryImpl(get(), get()) }
     single { LineBotService(get(), get(), get(), get()) }
     single { WebhookRoute(get()) }

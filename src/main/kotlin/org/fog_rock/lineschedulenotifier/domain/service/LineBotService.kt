@@ -73,13 +73,7 @@ class LineBotService(
 
         // Request Data from Sheets
         val sheetData = sheetsRepo.fetchSheetData(SHEET_RANGE_WEBHOOK)
-        if (sheetData.isEmpty() || sheetData[0].isEmpty()) {
-            logger.info("No reply message found in sheet.")
-            return null
-        }
-
-        // Just return the message string. The base class will send it.
-        return sheetData[0][0].toString()
+        return sheetData.getOrNull(0)?.getOrNull(0)?.toString()
     }
 
     override fun createPushNotifications(): List<Notification> {
@@ -110,13 +104,7 @@ class LineBotService(
             return emptyList()
         }
         // Skip header row and map to recipient ID
-        return sheetData.drop(1).mapNotNull { row ->
-            if (row.isNotEmpty() && row[0].toString().isNotBlank()) {
-                row[0].toString()
-            } else {
-                null
-            }
-        }
+        return sheetData.drop(1).mapNotNull { it.getOrNull(0)?.toString() }
     }
 
     private fun createWeeklyScheduleMessage(): String? {

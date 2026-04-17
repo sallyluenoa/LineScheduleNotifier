@@ -46,6 +46,12 @@ class KtorAppConfig(config: ApplicationConfig, isDevelopment: Boolean = false) :
     override val googleSheetsSpreadsheetIdKey: String =
         config.property("app.google_sheets.spreadsheet_id_key").getString()
 
+    override val googleDriveFolderIdKey: String =
+        config.property("app.google_drive.folder_id_key").getString()
+
+    override val googleSheetsFilenameFormatKey: String =
+        config.property("app.google_sheets.filename_format_key").getString()
+
     override val lineBotChannelAccessTokenKey: String =
         config.property("app.line_bot.channel_access_token_key").getString()
 

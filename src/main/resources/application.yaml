@@ -31,8 +31,11 @@ app:
   google_cloud:
     project_number: ${PROJECT_NUMBER}
     credentials_key: "GOOGLE_API_CREDENTIALS"
+  google_drive:
+    folder_id_key: "GOOGLE_DRIVE_FOLDER_ID"
   google_sheets:
     spreadsheet_id_key: "GOOGLE_SPREADSHEET_ID"
+    filename_format_key: "GOOGLE_SHEETS_FILENAME_FORMAT"
   line_bot:
     channel_access_token_key: "LINE_CHANNEL_ACCESS_TOKEN"
     channel_secret_key: "LINE_CHANNEL_SECRET"

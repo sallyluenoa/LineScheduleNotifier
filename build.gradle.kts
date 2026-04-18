@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.google.cloud.secretmanager)
     implementation(libs.google.api.client)
     implementation(libs.google.oauth.client.jetty)
+    implementation(libs.google.drive.api)
     implementation(libs.google.sheets.api)
     implementation(libs.bundles.line.bot)
     implementation(libs.fr.line.agent.core)

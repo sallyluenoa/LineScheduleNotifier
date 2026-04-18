@@ -23,7 +23,8 @@ logback = "1.5.25"
 google-cloud-secretmanager = "2.83.0"
 google-api-client = "2.8.1"
 google-oauth-client = "1.39.0"
-google-sheets-api = "v4-rev20251110-2.0.0"
+google-drive-api = "v3-rev20260405-2.0.0"
+google-sheets-api = "v4-rev20260213-2.0.0"
 line-bot-sdk = "9.14.0"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization-json = "1.10.0"
@@ -48,6 +49,7 @@ kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version
 google-cloud-secretmanager = { module = "com.google.cloud:google-cloud-secretmanager", version.ref = "google-cloud-secretmanager" }
 google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "google-api-client" }
 google-oauth-client-jetty = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "google-oauth-client" }
+google-drive-api = { module = "com.google.apis:google-api-services-drive", version.ref = "google-drive-api" }
 google-sheets-api = { module = "com.google.apis:google-api-services-sheets", version.ref = "google-sheets-api" }
 line-bot-messaging = { module = "com.linecorp.bot:line-bot-messaging-api-client", version.ref = "line-bot-sdk" }
 line-bot-webhook = { module = "com.linecorp.bot:line-bot-webhook", version.ref = "line-bot-sdk" }

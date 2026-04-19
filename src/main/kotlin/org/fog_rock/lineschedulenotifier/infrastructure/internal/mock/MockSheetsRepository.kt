@@ -17,6 +17,7 @@
 package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
 
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.slf4j.LoggerFactory
@@ -27,29 +28,36 @@ internal class MockSheetsRepository : SheetsRepository {
 
     override fun fetchSheetData(range: String): List<List<Any>> {
         logger.info("Mock fetchSheetData called with range: $range")
-        return when (range) {
-            "push" -> listOf(
-                listOf("to"), // Header
-                listOf("U_MOCK_ID_1"),
-                listOf("U_MOCK_ID_2")
+        return getMockDataForRange(range)
+    }
+
+    override fun fetchScheduledSheetData(yearMonth: YearMonth): List<List<Any>> {
+        logger.info("Mock fetchScheduledSheetData called with yearMonth: $yearMonth")
+        return getMockDataForRange("schedule")
+    }
+
+    private fun getMockDataForRange(range: String): List<List<Any>> = when (range) {
+        "push" -> listOf(
+            listOf("to"), // Header
+            listOf("U_MOCK_ID_1"),
+            listOf("U_MOCK_ID_2")
+        )
+        "webhook" -> listOf(
+            listOf("This is a mock reply message.")
+        )
+        "schedule" -> {
+            val today = LocalDate.now()
+            val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+            listOf(
+                listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"),
+                listOf(today.minusDays(1).format(formatter), "Yesterday", "1", "Past Event", "Past Item"),
+                listOf(today.format(formatter), "Today", "2", "Today's Event", "Today's Item"),
+                listOf(today.plusDays(1).format(formatter), "Tomorrow", "3", "Future Event", "Future Item")
             )
-            "webhook" -> listOf(
-                listOf("This is a mock reply message.")
-            )
-            "schedule" -> {
-                val today = LocalDate.now()
-                val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
-                listOf(
-                    listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"),
-                    listOf(today.minusDays(1).format(formatter), "Yesterday", "1", "Past Event", "Past Item"),
-                    listOf(today.format(formatter), "Today", "2", "Today's Event", "Today's Item"),
-                    listOf(today.plusDays(1).format(formatter), "Tomorrow", "3", "Future Event", "Future Item")
-                )
-            }
-            else -> {
-                logger.warn("Unexpected range for MockSheetsRepository: $range")
-                emptyList()
-            }
+        }
+        else -> {
+            logger.warn("Unexpected range for MockSheetsRepository: $range")
+            emptyList()
         }
     }
 }

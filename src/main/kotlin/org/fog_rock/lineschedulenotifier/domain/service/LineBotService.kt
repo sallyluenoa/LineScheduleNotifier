@@ -17,6 +17,7 @@
 package org.fog_rock.lineschedulenotifier.domain.service
 
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import org.fog_rock.frlineagent.core.domain.model.push.Notification
@@ -49,8 +50,6 @@ class LineBotService(
         private const val SHEET_RANGE_WEBHOOK = "webhook"
         // Default range for scheduled push notifications (To, Message)
         private const val SHEET_RANGE_PUSH = "push"
-        // Default range for schedule data
-        private const val SHEET_RANGE_SCHEDULE = "schedule"
 
         // Date format used in the spreadsheet
         private const val SHEET_DATE_FORMAT = "yyyy/MM/dd"
@@ -108,41 +107,73 @@ class LineBotService(
     }
 
     private fun createWeeklyScheduleMessage(): String? {
-        val sheetData = sheetsRepo.fetchSheetData(SHEET_RANGE_SCHEDULE)
+        val today = LocalDate.now()
+        val startDate = today.plusDays(1)
+        val endDate = today.plusWeeks(1)
+
+        val sheetData = fetchWeeklySheetData(startDate, endDate)
         if (sheetData.size <= 1) { // Needs at least a header and one data row
             logger.info("No schedule data or only header found in sheet.")
             return null
         }
 
-        val today = LocalDate.now()
-        val startDate = today.plusDays(1)
-        val endDate = today.plusWeeks(1)
         val sheetDateFormatter = DateTimeFormatter.ofPattern(SHEET_DATE_FORMAT)
-
-        // Find and sort schedules for the upcoming week
-        val scheduleRows = sheetData.drop(1).mapNotNull { row ->
-            val dateStr = row.getOrNull(COL_SCHEDULE_DATE)?.toString().orEmpty()
-            if (dateStr.isBlank()) {
-                return@mapNotNull null
-            }
-            val date = try {
-                 LocalDate.parse(dateStr, sheetDateFormatter)
-            } catch (e: DateTimeParseException) {
-                logger.warn("Failed to parse date from row: $dateStr", e)
-                return@mapNotNull null
-            }
-            if (date.isBetween(startDate, endDate)) {
-                date to row // Pair date and row for sorting
-            } else {
-                null
-            }
-        }.sortedBy { it.first }
-
+        val scheduleRows = filterAndSortWeeklySchedule(sheetData, startDate, endDate, sheetDateFormatter)
         if (scheduleRows.isEmpty()) {
             logger.info("No schedule found for the upcoming week.")
             return null
         }
 
+        return buildScheduleMessage(scheduleRows)
+    }
+
+    private fun fetchWeeklySheetData(startDate: LocalDate, endDate: LocalDate): List<List<Any>> {
+        val startYearMonth = YearMonth.from(startDate)
+        val endYearMonth = YearMonth.from(endDate)
+
+        val sheetData = mutableListOf<List<Any>>()
+
+        if (startYearMonth == endYearMonth) {
+            // The entire week is in the same month.
+            sheetData.addAll(sheetsRepo.fetchScheduledSheetData(startYearMonth))
+        } else {
+            // The week spans across two months.
+            val startMonthData = sheetsRepo.fetchScheduledSheetData(startYearMonth)
+            val endMonthData = sheetsRepo.fetchScheduledSheetData(endYearMonth)
+            sheetData.addAll(startMonthData)
+            if (sheetData.isNotEmpty() && endMonthData.isNotEmpty()) {
+                sheetData.addAll(endMonthData.drop(1)) // Exclude header
+            } else {
+                sheetData.addAll(endMonthData)
+            }
+        }
+        return sheetData
+    }
+
+    private fun filterAndSortWeeklySchedule(
+        sheetData: List<List<Any>>,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        formatter: DateTimeFormatter
+    ): List<Pair<LocalDate, List<Any>>> = sheetData.drop(1).mapNotNull { row ->
+        val dateStr = row.getOrNull(COL_SCHEDULE_DATE)?.toString().orEmpty()
+        if (dateStr.isBlank()) {
+            return@mapNotNull null
+        }
+        val date = try {
+            LocalDate.parse(dateStr, formatter)
+        } catch (e: DateTimeParseException) {
+            logger.warn("Failed to parse date from row: $dateStr", e)
+            return@mapNotNull null
+        }
+        if (date.isBetween(startDate, endDate)) {
+            date to row // Pair date and row for sorting
+        } else {
+            null
+        }
+    }.sortedBy { it.first }
+
+    private fun buildScheduleMessage(scheduleRows: List<Pair<LocalDate, List<Any>>>): String {
         val messageDateFormatter = DateTimeFormatter.ofPattern(MSG_DATE_FORMAT)
         val message = StringBuilder()
         message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_TITLE))

@@ -16,10 +16,6 @@
 
 package org.fog_rock.lineschedulenotifier.domain.service
 
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import org.fog_rock.frlineagent.core.domain.model.push.Notification
 import org.fog_rock.frlineagent.core.domain.model.webhook.EventType
 import org.fog_rock.frlineagent.core.domain.model.webhook.LineWebhookEvent
@@ -28,10 +24,8 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
-import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
-import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
+import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
-import org.fog_rock.lineschedulenotifier.extension.isBetween
 import org.slf4j.LoggerFactory
 
 /**
@@ -39,7 +33,7 @@ import org.slf4j.LoggerFactory
  */
 class LineBotService(
     private val sheetsRepo: SheetsRepository,
-    private val messageProvider: MessageProvider,
+    private val weeklyScheduleProvider: WeeklyScheduleProvider,
     lineClient: LineClient,
     verifier: SignatureVerifier
 ) : AbstractLineBotService(lineClient, verifier) {
@@ -50,18 +44,6 @@ class LineBotService(
         private const val SHEET_RANGE_WEBHOOK = "webhook"
         // Default range for scheduled push notifications (To, Message)
         private const val SHEET_RANGE_PUSH = "push"
-
-        // Date format used in the spreadsheet
-        private const val SHEET_DATE_FORMAT = "yyyy/MM/dd"
-        // Date format used in the message
-        private const val MSG_DATE_FORMAT = "M/d"
-
-        // Column indices for the schedule sheet.
-        private const val COL_SCHEDULE_DATE = 0
-        private const val COL_SCHEDULE_DAY_OF_WEEK = 1
-        private const val COL_SCHEDULE_PERIOD = 2
-        private const val COL_SCHEDULE_EVENTS = 3
-        private const val COL_SCHEDULE_ITEMS = 4
     }
 
     override fun createReplyMessage(event: LineWebhookEvent.Event, botId: String): String? {
@@ -84,7 +66,7 @@ class LineBotService(
         }
 
         // Get weekly schedule message
-        val message = createWeeklyScheduleMessage()
+        val message = weeklyScheduleProvider.provideMessage()
         if (message.isNullOrBlank()) {
             logger.info("No schedule for the upcoming week or message is blank.")
             return emptyList()
@@ -104,109 +86,6 @@ class LineBotService(
         }
         // Skip header row and map to recipient ID
         return sheetData.drop(1).mapNotNull { it.getOrNull(0)?.toString() }
-    }
-
-    private fun createWeeklyScheduleMessage(): String? {
-        val today = LocalDate.now()
-        val startDate = today.plusDays(1)
-        val endDate = today.plusWeeks(1)
-
-        val sheetData = fetchWeeklySheetData(startDate, endDate)
-        if (sheetData.size <= 1) { // Needs at least a header and one data row
-            logger.info("No schedule data or only header found in sheet.")
-            return null
-        }
-
-        val sheetDateFormatter = DateTimeFormatter.ofPattern(SHEET_DATE_FORMAT)
-        val scheduleRows = filterAndSortWeeklySchedule(sheetData, startDate, endDate, sheetDateFormatter)
-        if (scheduleRows.isEmpty()) {
-            logger.info("No schedule found for the upcoming week.")
-            return null
-        }
-
-        return buildScheduleMessage(scheduleRows)
-    }
-
-    private fun fetchWeeklySheetData(startDate: LocalDate, endDate: LocalDate): List<List<Any>> {
-        val startYearMonth = YearMonth.from(startDate)
-        val endYearMonth = YearMonth.from(endDate)
-
-        val sheetData = mutableListOf<List<Any>>()
-
-        if (startYearMonth == endYearMonth) {
-            // The entire week is in the same month.
-            sheetData.addAll(sheetsRepo.fetchScheduledSheetData(startYearMonth))
-        } else {
-            // The week spans across two months.
-            val startMonthData = sheetsRepo.fetchScheduledSheetData(startYearMonth)
-            val endMonthData = sheetsRepo.fetchScheduledSheetData(endYearMonth)
-            sheetData.addAll(startMonthData)
-            if (sheetData.isNotEmpty() && endMonthData.isNotEmpty()) {
-                sheetData.addAll(endMonthData.drop(1)) // Exclude header
-            } else {
-                sheetData.addAll(endMonthData)
-            }
-        }
-        return sheetData
-    }
-
-    private fun filterAndSortWeeklySchedule(
-        sheetData: List<List<Any>>,
-        startDate: LocalDate,
-        endDate: LocalDate,
-        formatter: DateTimeFormatter
-    ): List<Pair<LocalDate, List<Any>>> = sheetData.drop(1).mapNotNull { row ->
-        val dateStr = row.getOrNull(COL_SCHEDULE_DATE)?.toString().orEmpty()
-        if (dateStr.isBlank()) {
-            return@mapNotNull null
-        }
-        val date = try {
-            LocalDate.parse(dateStr, formatter)
-        } catch (e: DateTimeParseException) {
-            logger.warn("Failed to parse date from row: $dateStr", e)
-            return@mapNotNull null
-        }
-        if (date.isBetween(startDate, endDate)) {
-            date to row // Pair date and row for sorting
-        } else {
-            null
-        }
-    }.sortedBy { it.first }
-
-    private fun buildScheduleMessage(scheduleRows: List<Pair<LocalDate, List<Any>>>): String {
-        val messageDateFormatter = DateTimeFormatter.ofPattern(MSG_DATE_FORMAT)
-        val message = StringBuilder()
-        message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_TITLE))
-        message.append("\n\n")
-
-        scheduleRows.forEach { (date, row) ->
-            val events = row.getOrNull(COL_SCHEDULE_EVENTS)?.toString().orEmpty()
-            val items = row.getOrNull(COL_SCHEDULE_ITEMS)?.toString().orEmpty()
-
-            // Skip if both events and items are blank
-            if (events.isBlank() && items.isBlank()) {
-                return@forEach
-            }
-
-            val dateStr = date.format(messageDateFormatter)
-            val dayOfWeek = row.getOrNull(COL_SCHEDULE_DAY_OF_WEEK)?.toString().orEmpty()
-            val period = row.getOrNull(COL_SCHEDULE_PERIOD)?.toString().orEmpty()
-
-            message.append("[$dateStr($dayOfWeek) $period]\n")
-            val eventMessage = messageProvider.getMessage(
-                MessageKeys.SCHEDULE_WEEKLY_EVENTS,
-                events.ifBlank { messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_NONE) }
-            )
-            message.append(eventMessage)
-            message.append("\n")
-            if (items.isNotBlank()) {
-                message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_ITEMS, items))
-                message.append("\n")
-            }
-            message.append("\n")
-        }
-
-        return message.toString().trim()
     }
 
     private fun shouldReply(event: LineWebhookEvent.Event, botId: String): Boolean {

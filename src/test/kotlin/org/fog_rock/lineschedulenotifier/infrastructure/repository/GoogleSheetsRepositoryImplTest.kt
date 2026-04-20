@@ -41,8 +41,8 @@ class GoogleSheetsRepositoryImplTest {
     fun testFetchSheetData_cloudMode() {
         val appConfig = mockk<AppConfig>()
         val secretProvider = mockk<SecretProvider>()
-        every { appConfig.spreadsheetMode } returns ProviderMode.CLOUD
-        every { appConfig.googleCloudCredentialsKey } returns "test-credentials-key"
+        every { appConfig.googleWorkspaceMode } returns ProviderMode.CLOUD
+        every { appConfig.googleApiCredentialsKey } returns "test-credentials-key"
         every { appConfig.googleSheetsSpreadsheetIdKey } returns "test-spreadsheet-id-key"
 
         mockkConstructor(GoogleSheetsCloudRepository::class)
@@ -60,7 +60,7 @@ class GoogleSheetsRepositoryImplTest {
     fun testFetchSheetData_mockMode() {
         val appConfig = mockk<AppConfig>()
         val secretProvider = mockk<SecretProvider>()
-        every { appConfig.spreadsheetMode } returns ProviderMode.MOCK
+        every { appConfig.googleWorkspaceMode } returns ProviderMode.MOCK
 
         mockkConstructor(MockSheetsRepository::class)
         val expectedData = listOf(listOf("MockData"))

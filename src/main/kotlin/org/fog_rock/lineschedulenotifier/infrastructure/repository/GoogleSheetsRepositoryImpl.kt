@@ -22,17 +22,22 @@ import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
 import org.fog_rock.lineschedulenotifier.infrastructure.internal.cloud.GoogleSheetsCloudRepository
 import org.fog_rock.lineschedulenotifier.infrastructure.internal.mock.MockSheetsRepository
+import java.time.YearMonth
 
 class GoogleSheetsRepositoryImpl(
     config: AppConfig,
     secretManagerProvider: SecretProvider
 ) : SheetsRepository {
 
-    private val repository: SheetsRepository = when (config.spreadsheetMode) {
+    private val repository: SheetsRepository = when (config.googleWorkspaceMode) {
         ProviderMode.CLOUD -> GoogleSheetsCloudRepository(config, secretManagerProvider)
         ProviderMode.MOCK -> MockSheetsRepository()
     }
 
-    override fun fetchSheetData(range: String): List<List<Any>> = repository.fetchSheetData(range)
+    override fun fetchSheetData(range: String): List<List<Any>> =
+        repository.fetchSheetData(range)
+
+    override fun fetchScheduledSheetData(yearMonth: YearMonth): List<List<Any>> =
+        repository.fetchScheduledSheetData(yearMonth)
 }
 

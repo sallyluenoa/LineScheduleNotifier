@@ -23,14 +23,18 @@ import org.fog_rock.frlineagent.core.domain.config.ProviderMode
  * An interface for managing the integration mode with external services.
  */
  interface AppConfig : CoreAppConfig {
-    /** Mode for Spreadsheet. */
-    val spreadsheetMode: ProviderMode
-    /** Key for Google Credentials in Secret Manager. */
-    val googleCloudCredentialsKey: String
+    /** Mode for Google Workspace. */
+    val googleWorkspaceMode: ProviderMode
+
+    /** Key for Credentials of Google API in Secret Manager. */
+    val googleApiCredentialsKey: String
+
     /** Key for Spreadsheet ID in Secret Manager. */
     val googleSheetsSpreadsheetIdKey: String
-    /** Key for Google Drive Folder ID in Secret Manager. */
+
+    /** Key for Folder ID of Google Drive in Secret Manager. */
     val googleDriveFolderIdKey: String
-    /** Key for Google Sheets Filename Format in Secret Manager. */
+
+    /** Key for Filename Format of Google Sheets in Secret Manager. */
     val googleSheetsFilenameFormatKey: String
  }

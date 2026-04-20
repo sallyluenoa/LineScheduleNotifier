@@ -19,5 +19,5 @@ app:
     language: "ja"
   provider:
     secret_manager: "mock"
-    spreadsheet: "mock"
+    google_workspace: "mock"
     line_api: "mock"

@@ -24,20 +24,20 @@ import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
+import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataRepository
+import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleRepository
+import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
-import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
-import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
-import org.slf4j.LoggerFactory
 
 internal class GoogleSheetsCloudRepository(
     private val config: AppConfig,
     private val secretManagerProvider: SecretProvider
-) : SheetsRepository {
-
+) : ScheduleRepository, ApplicationDataRepository {
     private val logger = LoggerFactory.getLogger(GoogleSheetsCloudRepository::class.java)
 
     companion object {
@@ -46,7 +46,7 @@ internal class GoogleSheetsCloudRepository(
     }
 
     private val credentials by lazy {
-        val credentialsJson = secretManagerProvider.getSecret(config.googleCloudCredentialsKey)
+        val credentialsJson = secretManagerProvider.getSecret(config.googleApiCredentialsKey)
         GoogleCredentials.fromStream(ByteArrayInputStream(credentialsJson.toByteArray()))
             .createScoped(listOf(
                 SheetsScopes.SPREADSHEETS_READONLY,
@@ -70,7 +70,7 @@ internal class GoogleSheetsCloudRepository(
             .build()
     }
 
-    override fun fetchSheetData(range: String): List<List<Any>> =
+    override fun fetchDataByRange(range: String): List<List<Any>> =
         try {
             val spreadsheetId = secretManagerProvider.getSecret(config.googleSheetsSpreadsheetIdKey)
             sheetsService.spreadsheets().values()
@@ -85,7 +85,7 @@ internal class GoogleSheetsCloudRepository(
             emptyList()
         }
 
-    override fun fetchScheduledSheetData(yearMonth: YearMonth): List<List<Any>> =
+    override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> =
         try {
             val folderId = secretManagerProvider.getSecret(config.googleDriveFolderIdKey)
             val filenameFormat = secretManagerProvider.getSecret(config.googleSheetsFilenameFormatKey)

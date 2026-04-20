@@ -16,22 +16,22 @@
 
 package org.fog_rock.lineschedulenotifier.domain.provider
 
+import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
+import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
+import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleRepository
+import org.fog_rock.lineschedulenotifier.extension.isBetween
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
-import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
-import org.fog_rock.lineschedulenotifier.extension.isBetween
-import org.slf4j.LoggerFactory
 
 /**
  * A provider class that generates a weekly schedule message.
  */
 class WeeklyScheduleProvider(
-    private val sheetsRepo: SheetsRepository,
-    private val messageProvider: MessageProvider
+    private val scheduleRepo: ScheduleRepository,
+    private val messageProvider: MessageProvider,
 ) {
     private val logger = LoggerFactory.getLogger(WeeklyScheduleProvider::class.java)
 
@@ -82,11 +82,11 @@ class WeeklyScheduleProvider(
 
         if (startYearMonth == endYearMonth) {
             // The entire week is in the same month.
-            sheetData.addAll(sheetsRepo.fetchScheduledSheetData(startYearMonth))
+            sheetData.addAll(scheduleRepo.fetchMonthlyData(startYearMonth))
         } else {
             // The week spans across two months.
-            val startMonthData = sheetsRepo.fetchScheduledSheetData(startYearMonth)
-            val endMonthData = sheetsRepo.fetchScheduledSheetData(endYearMonth)
+            val startMonthData = scheduleRepo.fetchMonthlyData(startYearMonth)
+            val endMonthData = scheduleRepo.fetchMonthlyData(endYearMonth)
             sheetData.addAll(startMonthData)
             if (sheetData.isNotEmpty() && endMonthData.isNotEmpty()) {
                 sheetData.addAll(endMonthData.drop(1)) // Exclude header

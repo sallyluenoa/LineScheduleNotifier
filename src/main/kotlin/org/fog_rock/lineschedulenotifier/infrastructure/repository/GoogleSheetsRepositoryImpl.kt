@@ -16,10 +16,11 @@
 
 package org.fog_rock.lineschedulenotifier.infrastructure.repository
 
-import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataRepository
+import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleRepository
 import org.fog_rock.lineschedulenotifier.infrastructure.internal.cloud.GoogleSheetsCloudRepository
 import org.fog_rock.lineschedulenotifier.infrastructure.internal.mock.MockSheetsRepository
 import java.time.YearMonth
@@ -27,17 +28,17 @@ import java.time.YearMonth
 class GoogleSheetsRepositoryImpl(
     config: AppConfig,
     secretManagerProvider: SecretProvider
-) : SheetsRepository {
+) : ScheduleRepository, ApplicationDataRepository {
 
-    private val repository: SheetsRepository = when (config.googleWorkspaceMode) {
+    private val repository: Any = when (config.googleWorkspaceMode) {
         ProviderMode.CLOUD -> GoogleSheetsCloudRepository(config, secretManagerProvider)
         ProviderMode.MOCK -> MockSheetsRepository()
     }
 
-    override fun fetchSheetData(range: String): List<List<Any>> =
-        repository.fetchSheetData(range)
+    override fun fetchDataByRange(range: String): List<List<Any>> =
+        (repository as ApplicationDataRepository).fetchDataByRange(range)
 
-    override fun fetchScheduledSheetData(yearMonth: YearMonth): List<List<Any>> =
-        repository.fetchScheduledSheetData(yearMonth)
+    override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> =
+        (repository as ScheduleRepository).fetchMonthlyData(yearMonth)
 }
 

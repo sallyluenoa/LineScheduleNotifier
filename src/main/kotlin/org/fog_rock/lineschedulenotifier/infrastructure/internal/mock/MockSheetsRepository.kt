@@ -16,26 +16,25 @@
 
 package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
 
+import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataRepository
+import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleRepository
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
-import org.slf4j.LoggerFactory
 
-internal class MockSheetsRepository : SheetsRepository {
-
+internal class MockSheetsRepository : ScheduleRepository, ApplicationDataRepository {
     private val logger = LoggerFactory.getLogger(MockSheetsRepository::class.java)
 
-    override fun fetchSheetData(range: String): List<List<Any>> {
-        logger.info("Mock fetchSheetData called with range: $range")
+    override fun fetchDataByRange(range: String): List<List<Any>> {
+        logger.info("Mock fetchDataByRange called with range: $range")
         return getMockDataForRange(range)
     }
 
-    override fun fetchScheduledSheetData(yearMonth: YearMonth): List<List<Any>> {
-        logger.info("Mock fetchScheduledSheetData called with yearMonth: $yearMonth")
+    override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> {
+        logger.info("Mock fetchMonthlyData called with yearMonth: $yearMonth")
         return getMockDataForRange("schedule")
     }
-
     private fun getMockDataForRange(range: String): List<List<Any>> = when (range) {
         "push" -> listOf(
             listOf("to"), // Header

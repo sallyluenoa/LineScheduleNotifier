@@ -23,7 +23,7 @@ import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 /**
  * A class that reads AppConfig from a Ktor configuration file.
  */
-class KtorAppConfig(config: ApplicationConfig, isDevelopment: Boolean = false) : AppConfig {
+class KtorAppConfig(config: ApplicationConfig) : AppConfig {
 
     override val name: String =
         config.property("app.name").getString()

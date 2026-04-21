@@ -30,7 +30,7 @@ fun main(args: Array<String>): Unit =
     io.ktor.server.netty.EngineMain.main(args)
 
 fun Application.module() {
-    val config = KtorAppConfig(environment.config, true)
+    val config = KtorAppConfig(environment.config)
 
     install(FRLineAgent) {
         secretManagerMode = config.secretManagerMode

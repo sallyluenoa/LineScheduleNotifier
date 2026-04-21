@@ -28,15 +28,12 @@ import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class LineBotServiceTest {
 
     private lateinit var appDataRepo: ApplicationDataSource
-    private lateinit var scheduleRepo: ScheduleDataSource
     private lateinit var weeklyScheduleProvider: WeeklyScheduleProvider
     private lateinit var lineClient: LineClient
     private lateinit var verifier: SignatureVerifier
@@ -44,44 +41,38 @@ class LineBotServiceTest {
 
     private val botId = "U_BOT_ID"
     private val signature = "signature"
-    private val json = Json {
-        encodeDefaults = true
-        ignoreUnknownKeys = true
-    }
+    private val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
     @BeforeEach
     fun setUp() {
         appDataRepo = mockk(relaxed = true)
-        scheduleRepo = mockk(relaxed = true)
         weeklyScheduleProvider = mockk(relaxed = true)
         lineClient = mockk(relaxed = true)
-        verifier = mockk(relaxed = true)
-        every { verifier.verify(any(), any()) } returns true
-        service = LineBotService(appDataRepo, scheduleRepo, weeklyScheduleProvider, lineClient, verifier)
+        verifier = mockk(relaxed = true) {
+            every { verify(any(), any()) } returns true
+        }
+        service = LineBotService(appDataRepo, weeklyScheduleProvider, lineClient, verifier)
     }
 
-    private fun createWebhookJson(event: LineWebhookEvent.Event): String {
-        val webhook = LineWebhookEvent(botId, listOf(event))
+    private fun createWebhookJson(vararg events: LineWebhookEvent.Event): String {
+        val webhook = LineWebhookEvent(botId, events.toList())
         return json.encodeToString(webhook)
     }
 
     private fun createMessageEvent(
         sourceType: SourceType = SourceType.USER,
-        userId: String = "U_USER_ID",
-        groupId: String? = null,
         messageType: MessageType = MessageType.TEXT,
-        text: String = "hello",
         mentionees: List<LineWebhookEvent.Mentionee> = emptyList()
     ): LineWebhookEvent.Event {
         val source = LineWebhookEvent.Source(
             _type = sourceType.value,
-            userId = userId,
-            groupId = groupId
+            userId = "U_USER_ID",
+            groupId = if (sourceType == SourceType.GROUP) "G_GROUP_ID" else null
         )
         val message = LineWebhookEvent.Message(
             id = "msg1",
             _type = messageType.value,
-            text = text,
+            text = "hello",
             mention = if (mentionees.isNotEmpty()) LineWebhookEvent.Mention(mentionees) else null
         )
         return LineWebhookEvent.Event(
@@ -97,41 +88,98 @@ class LineBotServiceTest {
     }
 
     @Test
-    fun testHandleWebhook_userMessage() {
+    fun testHandleWebhook_replyToUserMessage() {
         // Arrange
-        val event = createMessageEvent(sourceType = SourceType.USER, userId = "user1")
+        val event = createMessageEvent(sourceType = SourceType.USER)
         val body = createWebhookJson(event)
         every { appDataRepo.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
-        every { lineClient.reply(any(), any()) } returns Result.success(Unit)
 
         // Act
-        val result = service.handleWebhook(body, signature)
+        service.handleWebhook(body, signature)
 
         // Assert
-        assertTrue(result.isSuccess)
-        verify(timeout = 1000) { lineClient.reply("replyToken", "Reply Message") }
+        verify { lineClient.reply("replyToken", "Reply Message") }
     }
 
     @Test
-    fun testHandleWebhook_groupMention() {
+    fun testHandleWebhook_replyToGroupMention() {
         // Arrange
         val mentionees = listOf(LineWebhookEvent.Mentionee(0, 5, botId))
-        val event = createMessageEvent(
-            sourceType = SourceType.GROUP,
-            groupId = "group1",
-            mentionees = mentionees
-        )
+        val event = createMessageEvent(sourceType = SourceType.GROUP, mentionees = mentionees)
         val body = createWebhookJson(event)
         every { appDataRepo.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
-        every { lineClient.reply(any(), any()) } returns Result.success(Unit)
 
         // Act
-        val result = service.handleWebhook(body, signature)
+        service.handleWebhook(body, signature)
 
         // Assert
-        assertTrue(result.isSuccess)
-        verify(timeout = 1000) { lineClient.reply("replyToken", "Reply Message") }
+        verify { lineClient.reply("replyToken", "Reply Message") }
     }
 
-    // Other tests remain unchanged as they do not depend on the repository mocks.
+    @Test
+    fun testHandleWebhook_noReplyOnNonTextMessage() {
+        // Arrange
+        val event = createMessageEvent(messageType = MessageType.IMAGE)
+        val body = createWebhookJson(event)
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(exactly = 0) { lineClient.reply(any(), any()) }
+    }
+
+    @Test
+    fun testHandleWebhook_noReplyOnGroupMessageWithoutMention() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.GROUP)
+        val body = createWebhookJson(event)
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(exactly = 0) { lineClient.reply(any(), any()) }
+    }
+
+    @Test
+    fun testExecutePush_pushNotifications() {
+        // Arrange
+        every { appDataRepo.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))
+        every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
+        every { lineClient.push(any(), any()) } returns Result.success(Unit)
+
+        // Act
+        service.executePush()
+
+        // Assert
+        verify { lineClient.push("user1", "Weekly Schedule") }
+        verify { lineClient.push("user2", "Weekly Schedule") }
+    }
+
+    @Test
+    fun testExecutePush_noRecipients() {
+        // Arrange
+        every { appDataRepo.fetchDataByRange("push") } returns listOf(listOf("header"))
+        every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
+
+        // Act
+        service.executePush()
+
+        // Assert
+        verify(exactly = 0) { lineClient.push(any(), any()) }
+    }
+
+    @Test
+    fun testExecutePush_nullMessage() {
+        // Arrange
+        every { appDataRepo.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"))
+        every { weeklyScheduleProvider.provideMessage() } returns null
+
+        // Act
+        service.executePush()
+
+        // Assert
+        verify(exactly = 0) { lineClient.push(any(), any()) }
+    }
 }

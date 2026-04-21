@@ -55,7 +55,7 @@ class GoogleWorkspaceDataSourceTest {
     }
 
     @Test
-    fun `fetchDataByRange should request spreadsheetId from secretProvider`() {
+    fun testFetchDataByRange_requestsSpreadsheetId() {
         // Act
         dataSource.fetchDataByRange("test_range")
 
@@ -64,7 +64,7 @@ class GoogleWorkspaceDataSourceTest {
     }
 
     @Test
-    fun `fetchDataByRange should return empty list if secretProvider fails`() {
+    fun testFetchDataByRange_returnsEmptyListOnFailure() {
         // Arrange
         every { secretProvider.getSecret(config.googleSheetsSpreadsheetIdKey) } throws RuntimeException("Test Exception")
 
@@ -76,7 +76,7 @@ class GoogleWorkspaceDataSourceTest {
     }
 
     @Test
-    fun `fetchMonthlyData should request folderId and filenameFormat from secretProvider`() {
+    fun testFetchMonthlyData_requestsFolderIdAndFilenameFormat() {
         // Arrange
         val yearMonth = YearMonth.of(2026, 4)
 
@@ -89,7 +89,7 @@ class GoogleWorkspaceDataSourceTest {
     }
 
     @Test
-    fun `fetchMonthlyData should return empty list if secretProvider fails for folderId`() {
+    fun testFetchMonthlyData_returnsEmptyListOnFolderIdFailure() {
         // Arrange
         val yearMonth = YearMonth.of(2026, 4)
         every { secretProvider.getSecret(config.googleDriveFolderIdKey) } throws RuntimeException("Test Exception")
@@ -102,7 +102,7 @@ class GoogleWorkspaceDataSourceTest {
     }
 
     @Test
-    fun `fetchMonthlyData should return empty list if secretProvider fails for filenameFormat`() {
+    fun testFetchMonthlyData_returnsEmptyListOnFilenameFormatFailure() {
         // Arrange
         val yearMonth = YearMonth.of(2026, 4)
         every { secretProvider.getSecret(config.googleSheetsFilenameFormatKey) } throws RuntimeException("Test Exception")

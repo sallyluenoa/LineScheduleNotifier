@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
+package org.fog_rock.lineschedulenotifier.infrastructure.datasource
 
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class MockSheetsRepositoryTest {
+class MockDataSourceTest {
 
-    private lateinit var repository: MockSheetsRepository
+    private lateinit var dataSource: MockDataSource
 
     @BeforeEach
     fun setUp() {
-        repository = MockSheetsRepository()
+        dataSource = MockDataSource()
     }
 
     @Test
-    fun testFetchSheetData_push() {
-        val result = repository.fetchSheetData("push")
+    fun testFetchDataByRange_push() {
+        val result = dataSource.fetchDataByRange("push")
         val expected = listOf(
-            listOf("to"),
+            listOf("to"), // Header
             listOf("U_MOCK_ID_1"),
             listOf("U_MOCK_ID_2")
         )
@@ -44,8 +45,8 @@ class MockSheetsRepositoryTest {
     }
 
     @Test
-    fun testFetchSheetData_webhook() {
-        val result = repository.fetchSheetData("webhook")
+    fun testFetchDataByRange_webhook() {
+        val result = dataSource.fetchDataByRange("webhook")
         val expected = listOf(
             listOf("This is a mock reply message.")
         )
@@ -53,8 +54,8 @@ class MockSheetsRepositoryTest {
     }
 
     @Test
-    fun testFetchSheetData_schedule() {
-        val result = repository.fetchSheetData("schedule")
+    fun testFetchDataByRange_schedule() {
+        val result = dataSource.fetchDataByRange("schedule")
         // Check if all rows have 5 columns
         assertTrue(result.all { it.size == 5 })
         // Check header row
@@ -68,8 +69,25 @@ class MockSheetsRepositoryTest {
     }
 
     @Test
-    fun testFetchSheetData_unknown() {
-        val result = repository.fetchSheetData("unknown_range")
+    fun testFetchDataByRange_unknown() {
+        val result = dataSource.fetchDataByRange("unknown_range")
         assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun testFetchMonthlyData() {
+        val yearMonth = YearMonth.now()
+        val result = dataSource.fetchMonthlyData(yearMonth)
+        // This should return the same as "schedule" for the mock.
+        // Check if all rows have 5 columns
+        assertTrue(result.all { it.size == 5 })
+        // Check header row
+        assertEquals(
+            listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"),
+            result[0]
+        )
+        // Check if today's data is included
+        val today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+        assertTrue(result.any { it[0] == today && it[1] == "Today" })
     }
 }

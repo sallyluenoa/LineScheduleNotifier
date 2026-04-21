@@ -18,7 +18,7 @@ package org.fog_rock.lineschedulenotifier.domain.provider
 
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleRepository
+import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
 import org.fog_rock.lineschedulenotifier.extension.isBetween
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -30,7 +30,7 @@ import java.time.format.DateTimeParseException
  * A provider class that generates a weekly schedule message.
  */
 class WeeklyScheduleProvider(
-    private val scheduleRepo: ScheduleRepository,
+    private val scheduleRepo: ScheduleDataSource,
     private val messageProvider: MessageProvider,
 ) {
     private val logger = LoggerFactory.getLogger(WeeklyScheduleProvider::class.java)

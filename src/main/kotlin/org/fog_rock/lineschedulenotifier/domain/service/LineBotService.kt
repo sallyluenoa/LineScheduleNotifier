@@ -25,18 +25,19 @@ import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataRepository
+import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
 import org.slf4j.LoggerFactory
 
 /**
  * Service class for handling LINE Bot operations.
  */
 class LineBotService(
-    private val appDataRepo: ApplicationDataRepository,
+    private val appDataRepo: ApplicationDataSource,
     private val weeklyScheduleProvider: WeeklyScheduleProvider,
     lineClient: LineClient,
     verifier: SignatureVerifier
 ) : AbstractLineBotService(lineClient, verifier) {
+
     private val logger = LoggerFactory.getLogger(LineBotService::class.java)
 
     companion object {

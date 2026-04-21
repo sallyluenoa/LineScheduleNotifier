@@ -21,7 +21,7 @@ import java.time.YearMonth
 /**
  * Interface for accessing schedule data.
  */
-interface ScheduleRepository {
+interface ScheduleDataSource {
     /**
      * Fetches schedule data for a specific month.
      *

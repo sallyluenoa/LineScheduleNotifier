@@ -19,7 +19,7 @@ package org.fog_rock.lineschedulenotifier.domain.repository
 /**
  * Interface for accessing general application data.
  */
-interface ApplicationDataRepository {
+interface ApplicationDataSource {
     /**
      * Fetches raw data from a specified range.
      * This is typically used for accessing data with a fixed location,

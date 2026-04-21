@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
+package org.fog_rock.lineschedulenotifier.infrastructure.datasource
 
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataRepository
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleRepository
-import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
+import org.slf4j.LoggerFactory
 
-internal class MockSheetsRepository : ScheduleRepository, ApplicationDataRepository {
-    private val logger = LoggerFactory.getLogger(MockSheetsRepository::class.java)
+internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
+    private val logger = LoggerFactory.getLogger(MockDataSource::class.java)
 
     override fun fetchDataByRange(range: String): List<List<Any>> {
         logger.info("Mock fetchDataByRange called with range: $range")
@@ -35,6 +35,7 @@ internal class MockSheetsRepository : ScheduleRepository, ApplicationDataReposit
         logger.info("Mock fetchMonthlyData called with yearMonth: $yearMonth")
         return getMockDataForRange("schedule")
     }
+
     private fun getMockDataForRange(range: String): List<List<Any>> = when (range) {
         "push" -> listOf(
             listOf("to"), // Header
@@ -55,7 +56,7 @@ internal class MockSheetsRepository : ScheduleRepository, ApplicationDataReposit
             )
         }
         else -> {
-            logger.warn("Unexpected range for MockSheetsRepository: $range")
+            logger.warn("Unexpected range for MockDataSource: $range")
             emptyList()
         }
     }

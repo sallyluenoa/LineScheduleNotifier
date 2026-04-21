@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.fog_rock.lineschedulenotifier.infrastructure.internal.cloud
+package org.fog_rock.lineschedulenotifier.infrastructure.datasource
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -26,19 +26,19 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataRepository
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleRepository
+import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-internal class GoogleSheetsCloudRepository(
+internal class GoogleWorkspaceDataSource(
     private val config: AppConfig,
     private val secretManagerProvider: SecretProvider
-) : ScheduleRepository, ApplicationDataRepository {
-    private val logger = LoggerFactory.getLogger(GoogleSheetsCloudRepository::class.java)
+) : ScheduleDataSource, ApplicationDataSource {
+    private val logger = LoggerFactory.getLogger(GoogleWorkspaceDataSource::class.java)
 
     companion object {
         private const val DATE_FORMAT_PATTERN = "yyyyMM"

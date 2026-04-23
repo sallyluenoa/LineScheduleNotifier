@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory
  * Service class for handling LINE Bot operations.
  */
 class LineBotService(
-    private val appDataRepo: ApplicationDataSource,
+    private val appDataSource: ApplicationDataSource,
     private val weeklyScheduleProvider: WeeklyScheduleProvider,
     lineClient: LineClient,
     verifier: SignatureVerifier
@@ -54,7 +54,7 @@ class LineBotService(
         }
 
         // Request Data from Sheets
-        val sheetData = appDataRepo.fetchDataByRange(SHEET_RANGE_WEBHOOK)
+        val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_WEBHOOK)
         return sheetData.getOrNull(0)?.getOrNull(0)?.toString()
     }
 
@@ -80,7 +80,7 @@ class LineBotService(
     }
 
     private fun fetchRecipients(): List<String> {
-        val sheetData = appDataRepo.fetchDataByRange(SHEET_RANGE_PUSH)
+        val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_PUSH)
         if (sheetData.size <= 1) { // Check for header
             logger.info("No recipient data or only header found in sheet.")
             return emptyList()

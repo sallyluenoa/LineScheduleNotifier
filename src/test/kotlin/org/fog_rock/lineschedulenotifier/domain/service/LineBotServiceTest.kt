@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test
 
 class LineBotServiceTest {
 
-    private lateinit var appDataRepo: ApplicationDataSource
+    private lateinit var appDataSource: ApplicationDataSource
     private lateinit var weeklyScheduleProvider: WeeklyScheduleProvider
     private lateinit var lineClient: LineClient
     private lateinit var verifier: SignatureVerifier
@@ -45,13 +45,13 @@ class LineBotServiceTest {
 
     @BeforeEach
     fun setUp() {
-        appDataRepo = mockk(relaxed = true)
+        appDataSource = mockk(relaxed = true)
         weeklyScheduleProvider = mockk(relaxed = true)
         lineClient = mockk(relaxed = true)
         verifier = mockk(relaxed = true) {
             every { verify(any(), any()) } returns true
         }
-        service = LineBotService(appDataRepo, weeklyScheduleProvider, lineClient, verifier)
+        service = LineBotService(appDataSource, weeklyScheduleProvider, lineClient, verifier)
     }
 
     private fun createWebhookJson(vararg events: LineWebhookEvent.Event): String {
@@ -92,7 +92,7 @@ class LineBotServiceTest {
         // Arrange
         val event = createMessageEvent(sourceType = SourceType.USER)
         val body = createWebhookJson(event)
-        every { appDataRepo.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
+        every { appDataSource.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
 
         // Act
         service.handleWebhook(body, signature)
@@ -107,7 +107,7 @@ class LineBotServiceTest {
         val mentionees = listOf(LineWebhookEvent.Mentionee(0, 5, botId))
         val event = createMessageEvent(sourceType = SourceType.GROUP, mentionees = mentionees)
         val body = createWebhookJson(event)
-        every { appDataRepo.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
+        every { appDataSource.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
 
         // Act
         service.handleWebhook(body, signature)
@@ -145,7 +145,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_pushNotifications() {
         // Arrange
-        every { appDataRepo.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))
+        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))
         every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
         every { lineClient.push(any(), any()) } returns Result.success(Unit)
 
@@ -160,7 +160,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_noRecipients() {
         // Arrange
-        every { appDataRepo.fetchDataByRange("push") } returns listOf(listOf("header"))
+        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"))
         every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
 
         // Act
@@ -173,7 +173,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_nullMessage() {
         // Arrange
-        every { appDataRepo.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"))
+        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"))
         every { weeklyScheduleProvider.provideMessage() } returns null
 
         // Act

@@ -30,7 +30,7 @@ import java.time.format.DateTimeParseException
  * A provider class that generates a weekly schedule message.
  */
 class WeeklyScheduleProvider(
-    private val scheduleRepo: ScheduleDataSource,
+    private val scheduleDataSource: ScheduleDataSource,
     private val messageProvider: MessageProvider,
 ) {
     private val logger = LoggerFactory.getLogger(WeeklyScheduleProvider::class.java)
@@ -82,11 +82,11 @@ class WeeklyScheduleProvider(
 
         if (startYearMonth == endYearMonth) {
             // The entire week is in the same month.
-            sheetData.addAll(scheduleRepo.fetchMonthlyData(startYearMonth))
+            sheetData.addAll(scheduleDataSource.fetchMonthlyData(startYearMonth))
         } else {
             // The week spans across two months.
-            val startMonthData = scheduleRepo.fetchMonthlyData(startYearMonth)
-            val endMonthData = scheduleRepo.fetchMonthlyData(endYearMonth)
+            val startMonthData = scheduleDataSource.fetchMonthlyData(startYearMonth)
+            val endMonthData = scheduleDataSource.fetchMonthlyData(endYearMonth)
             sheetData.addAll(startMonthData)
             if (sheetData.isNotEmpty() && endMonthData.isNotEmpty()) {
                 sheetData.addAll(endMonthData.drop(1)) // Exclude header

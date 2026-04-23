@@ -76,10 +76,7 @@ internal class GoogleWorkspaceDataSource(
             sheetsService.spreadsheets().values()
                 .get(spreadsheetId, range)
                 .execute()
-                .getValues() ?: run {
-                    logger.info("No data found in Google Sheets. Range: $range")
-                    emptyList()
-                }
+                .getValues()
         } catch (e: Exception) {
             logger.error("Failed to fetch data from Google Sheets. Range: $range", e)
             emptyList()
@@ -100,10 +97,7 @@ internal class GoogleWorkspaceDataSource(
             sheetsService.spreadsheets().values()
                 .get(fileId, filename)
                 .execute()
-                .getValues() ?: run {
-                    logger.info("No data found in sheet for month: $monthStr")
-                    emptyList()
-                }
+                .getValues()
         } catch (e: Exception) {
             logger.error("Failed to fetch scheduled data from Google Sheets for month: $yearMonth", e)
             emptyList()

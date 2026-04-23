@@ -16,7 +16,6 @@
 
 package org.fog_rock.lineschedulenotifier.infrastructure.datasource
 
-import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -54,40 +53,49 @@ class MockDataSourceTest {
     }
 
     @Test
-    fun testFetchDataByRange_schedule() {
-        val result = dataSource.fetchDataByRange("schedule")
-        // Check if all rows have 5 columns
-        assertTrue(result.all { it.size == 5 })
-        // Check header row
-        assertEquals(
-            listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"),
-            result[0]
-        )
-        // Check if today's data is included
-        val today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-        assertTrue(result.any { it[0] == today && it[1] == "Today" })
-    }
-
-    @Test
     fun testFetchDataByRange_unknown() {
         val result = dataSource.fetchDataByRange("unknown_range")
         assertTrue(result.isEmpty())
     }
 
     @Test
-    fun testFetchMonthlyData() {
-        val yearMonth = YearMonth.now()
+    fun testFetchMonthlyData_30DayMonth() {
+        assertMonthlyData(YearMonth.of(2026, 4), 30) // April
+    }
+
+    @Test
+    fun testFetchMonthlyData_31DayMonth() {
+        assertMonthlyData(YearMonth.of(2026, 5), 31) // May
+    }
+
+    @Test
+    fun testFetchMonthlyData_February() {
+        assertMonthlyData(YearMonth.of(2026, 2), 28) // February
+    }
+
+    @Test
+    fun testFetchMonthlyData_LeapFebruary() {
+        assertMonthlyData(YearMonth.of(2024, 2), 29) // Leap February
+    }
+
+    private fun assertMonthlyData(yearMonth: YearMonth, expectedDays: Int) {
         val result = dataSource.fetchMonthlyData(yearMonth)
-        // This should return the same as "schedule" for the mock.
+
         // Check if all rows have 5 columns
         assertTrue(result.all { it.size == 5 })
+
         // Check header row
         assertEquals(
             listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"),
             result[0]
         )
-        // Check if today's data is included
-        val today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-        assertTrue(result.any { it[0] == today && it[1] == "Today" })
+
+        // Check data size (header + days of month)
+        assertEquals(1 + expectedDays, result.size)
+
+        // Check first and last day
+        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        assertEquals(yearMonth.atDay(1).format(formatter), result[1][0])
+        assertEquals(yearMonth.atDay(expectedDays).format(formatter), result.last()[0])
     }
 }

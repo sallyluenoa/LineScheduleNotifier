@@ -16,12 +16,13 @@
 
 package org.fog_rock.lineschedulenotifier.infrastructure.datasource
 
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
 import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
 import org.slf4j.LoggerFactory
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
     private val logger = LoggerFactory.getLogger(MockDataSource::class.java)
@@ -33,7 +34,7 @@ internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
 
     override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> {
         logger.info("Mock fetchMonthlyData called with yearMonth: $yearMonth")
-        return getMockDataForRange("schedule")
+        return generateMonthlySchedule(yearMonth)
     }
 
     private fun getMockDataForRange(range: String): List<List<Any>> = when (range) {
@@ -45,19 +46,33 @@ internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
         "webhook" -> listOf(
             listOf("This is a mock reply message.")
         )
-        "schedule" -> {
-            val today = LocalDate.now()
-            val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
-            listOf(
-                listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments"),
-                listOf(today.minusDays(1).format(formatter), "Yesterday", "1", "Past Event", "Past Item"),
-                listOf(today.format(formatter), "Today", "2", "Today's Event", "Today's Item"),
-                listOf(today.plusDays(1).format(formatter), "Tomorrow", "3", "Future Event", "Future Item")
-            )
-        }
         else -> {
             logger.warn("Unexpected range for MockDataSource: $range")
             emptyList()
         }
+    }
+
+    private fun generateMonthlySchedule(yearMonth: YearMonth): List<List<Any>> {
+        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        val header = listOf("Date", "Day of the Week", "Period", "Events & Schedule", "Items to Bring & Assignments")
+
+        val monthlyData = mutableListOf<List<Any>>()
+        monthlyData.add(header)
+
+        val daysInMonth = yearMonth.lengthOfMonth()
+        for (day in 1..daysInMonth) {
+            val date = yearMonth.atDay(day)
+            val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+            monthlyData.add(
+                listOf(
+                    date.format(formatter),
+                    dayOfWeek,
+                    "Mock Period",
+                    "Mock Event for ${date.monthValue}/${date.dayOfMonth}",
+                    "Mock Item for ${date.monthValue}/${date.dayOfMonth}"
+                )
+            )
+        }
+        return monthlyData
     }
 }

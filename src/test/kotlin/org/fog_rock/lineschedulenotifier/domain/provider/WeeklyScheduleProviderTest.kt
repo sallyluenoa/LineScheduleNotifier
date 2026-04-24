@@ -19,6 +19,7 @@ package org.fog_rock.lineschedulenotifier.domain.provider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.unmockkAll
 import java.time.LocalDate
 import java.time.YearMonth
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
@@ -29,6 +30,7 @@ import java.util.Locale
 import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -40,6 +42,14 @@ class WeeklyScheduleProviderTest {
 
     private val today = LocalDate.of(2026, 4, 15) // Wednesday
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
+
+    companion object {
+        @AfterAll
+        @JvmStatic
+        fun teardown() {
+            unmockkAll()
+        }
+    }
 
     @BeforeEach
     fun setup() {
@@ -61,6 +71,7 @@ class WeeklyScheduleProviderTest {
 
         weeklyScheduleProvider = WeeklyScheduleProvider(scheduleDataSource, messageProvider)
     }
+
 
     @Test
     fun testProvideMessage_singleEvent() {
@@ -117,7 +128,6 @@ class WeeklyScheduleProviderTest {
                 "May Item"
             )
         )
-        mockkStatic(LocalDate::class)
         every { LocalDate.now() } returns aprilDate.minusDays(2) // Set today to 2026-04-28 to cross month
 
         every { scheduleDataSource.fetchMonthlyData(YearMonth.of(2026, 4)) } returns aprilData

@@ -39,7 +39,15 @@ This document defines the coding standards and project-specific constraints for 
 - **KDoc:** Provide clear and concise KDoc for all public classes, interfaces, and functions.
 - **Override Methods:** Do not provide KDoc descriptions for overridden methods (methods with the `override` keyword), as they inherit documentation from their supertype.
 - **Test Code:** Do not provide KDoc for test classes or test methods.
-- **Test Method Naming:** Name test functions descriptively to convey their purpose. Follow the pattern `test<TargetMethod>_<Condition>`, where `<TargetMethod>` is the method under test and `<Condition>` describes the test case (e.g., `testHandleWebhook_success`, `testExecutePush_invalidData`).
+- **Test Method Naming:** Test function names must clearly describe their purpose using the CamelCase convention. Follow the pattern `test<TargetMethod>_<Condition>`.
+    - **`<TargetMethod>`:** The name of the method being tested.
+    - **`<Condition>`:** A concise description of the specific scenario or expected outcome being tested. Use CamelCase for multi-word descriptions.
+    - **Examples:**
+        - **Good:** `testHandleWebhook_success()` - Simple success case.
+        - **Good:** `testExecutePush_invalidData()` - Testing invalid data input.
+        - **Good:** `testProvideMessage_eventsAcrossMonths()` - Testing a specific logic path where events span multiple months.
+        - **Good:** `testHandleWebhook_noReplyOnGroupMessageWithoutMention()` - Testing a specific condition for not replying.
+    - **Avoid:** Do not use backticks (e.g., ``fun `test something`()``) for test names to ensure consistency across the project.
 - **Tone:** Keep all technical communication professional and objective.
 
 ## 5. Development Workflow

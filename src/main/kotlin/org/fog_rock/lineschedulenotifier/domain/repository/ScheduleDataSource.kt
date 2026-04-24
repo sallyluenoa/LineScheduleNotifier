@@ -16,15 +16,17 @@
 
 package org.fog_rock.lineschedulenotifier.domain.repository
 
+import java.time.YearMonth
+
 /**
- * Interface for accessing Google Sheets data.
+ * Interface for accessing schedule data.
  */
-interface SheetsRepository {
+interface ScheduleDataSource {
     /**
-     * Fetches data from a specified range in the spreadsheet.
+     * Fetches schedule data for a specific month.
      *
-     * @param range The A1 notation of the range to fetch.
+     * @param yearMonth The year and month to fetch data for.
      * @return A list of rows, where each row is a list of cell values.
      */
-    fun fetchSheetData(range: String): List<List<Any>>
+    fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>>
 }

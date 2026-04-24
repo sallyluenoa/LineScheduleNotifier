@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
+package org.fog_rock.lineschedulenotifier.domain.message
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-
-class MockSheetsRepositoryTest {
-
-    @Test
-    fun testFetchSheetData() {
-        val repository = MockSheetsRepository()
-        val result = repository.fetchSheetData("A1:B2")
-
-        val expected = listOf(
-            listOf("Header1", "Header2"),
-            listOf("Value1", "Value2")
-        )
-        Assertions.assertEquals(expected, result)
-    }
+/**
+ * A collection of message keys for resource bundles.
+ */
+object MessageKeys {
+    const val SCHEDULE_WEEKLY_TITLE = "schedule.weekly.title"
+    const val SCHEDULE_WEEKLY_EVENTS = "schedule.weekly.events"
+    const val SCHEDULE_WEEKLY_ITEMS = "schedule.weekly.items"
+    const val SCHEDULE_WEEKLY_NONE = "schedule.weekly.none"
 }

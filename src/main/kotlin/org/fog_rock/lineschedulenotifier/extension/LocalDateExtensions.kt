@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package org.fog_rock.lineschedulenotifier.infrastructure.internal.mock
+package org.fog_rock.lineschedulenotifier.extension
 
-import org.fog_rock.lineschedulenotifier.domain.repository.SheetsRepository
-import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
-internal class MockSheetsRepository : SheetsRepository {
-
-    private val logger = LoggerFactory.getLogger(MockSheetsRepository::class.java)
-
-    override fun fetchSheetData(range: String): List<List<Any>> {
-        logger.info("Mock fetchSheetData called with range: $range")
-        return listOf(
-            listOf("Header1", "Header2"),
-            listOf("Value1", "Value2")
-        )
-    }
-}
+/**
+ * Checks if this date is within the given start and end date, inclusive.
+ * @param startDate The start date of the period.
+ * @param endDate The end date of the period.
+ * @return True if this date is between or equal to the start and end dates.
+ */
+fun LocalDate.isBetween(startDate: LocalDate, endDate: LocalDate): Boolean =
+    !this.isBefore(startDate) && !this.isAfter(endDate)

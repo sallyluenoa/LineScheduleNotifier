@@ -23,7 +23,7 @@ import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 /**
  * A class that reads AppConfig from a Ktor configuration file.
  */
-class KtorAppConfig(config: ApplicationConfig, isDevelopment: Boolean = false) : AppConfig {
+class KtorAppConfig(config: ApplicationConfig) : AppConfig {
 
     override val name: String =
         config.property("app.name").getString()
@@ -31,20 +31,26 @@ class KtorAppConfig(config: ApplicationConfig, isDevelopment: Boolean = false) :
     override val secretManagerMode: ProviderMode =
         getProviderMode(config, "app.provider.secret_manager")
 
-    override val spreadsheetMode: ProviderMode =
-        getProviderMode(config, "app.provider.spreadsheet")
+    override val googleWorkspaceMode: ProviderMode =
+        getProviderMode(config, "app.provider.google_workspace")
 
     override val lineApiMode: ProviderMode =
         getProviderMode(config, "app.provider.line_api")
 
     override val googleCloudProjectNumber: String =
-        config.property("app.google_cloud.project_number").getString()
+        config.property("app.google.cloud.project_number").getString()
 
-    override val googleCloudCredentialsKey: String =
-        config.property("app.google_cloud.credentials_key").getString()
+    override val googleApiCredentialsKey: String =
+        config.property("app.google.cloud.credentials_key").getString()
 
     override val googleSheetsSpreadsheetIdKey: String =
-        config.property("app.google_sheets.spreadsheet_id_key").getString()
+        config.property("app.google.sheets.spreadsheet_id_key").getString()
+
+    override val googleDriveFolderIdKey: String =
+        config.property("app.google.drive.folder_id_key").getString()
+
+    override val googleSheetsFilenameFormatKey: String =
+        config.property("app.google.sheets.filename_format_key").getString()
 
     override val lineBotChannelAccessTokenKey: String =
         config.property("app.line_bot.channel_access_token_key").getString()

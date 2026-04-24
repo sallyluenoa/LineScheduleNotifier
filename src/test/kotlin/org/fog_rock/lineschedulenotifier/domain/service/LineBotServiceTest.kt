@@ -16,7 +16,6 @@
 
 package org.fog_rock.lineschedulenotifier.domain.service
 
-import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -29,7 +28,6 @@ import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -56,44 +54,6 @@ class LineBotServiceTest {
         service = LineBotService(appDataSource, weeklyScheduleProvider, lineClient, verifier)
     }
 
-    @AfterEach
-    fun tearDown() {
-        clearAllMocks()
-    }
-
-    private fun createWebhookJson(vararg events: LineWebhookEvent.Event): String {
-        val webhook = LineWebhookEvent(botId, events.toList())
-        return json.encodeToString(webhook)
-    }
-
-    private fun createMessageEvent(
-        sourceType: SourceType = SourceType.USER,
-        messageType: MessageType = MessageType.TEXT,
-        mentionees: List<LineWebhookEvent.Mentionee> = emptyList()
-    ): LineWebhookEvent.Event {
-        val source = LineWebhookEvent.Source(
-            _type = sourceType.value,
-            userId = "U_USER_ID",
-            groupId = if (sourceType == SourceType.GROUP) "G_GROUP_ID" else null
-        )
-        val message = LineWebhookEvent.Message(
-            id = "msg1",
-            _type = messageType.value,
-            text = "hello",
-            mention = if (mentionees.isNotEmpty()) LineWebhookEvent.Mention(mentionees) else null
-        )
-        return LineWebhookEvent.Event(
-            _type = EventType.MESSAGE.value,
-            replyToken = "replyToken",
-            source = source,
-            timestamp = 1234567890,
-            mode = "active",
-            webhookEventId = "webhookEventId",
-            deliveryContext = LineWebhookEvent.DeliveryContext(false),
-            message = message
-        )
-    }
-
     @Test
     fun testHandleWebhook_replyToUserMessage() {
         // Arrange
@@ -105,7 +65,7 @@ class LineBotServiceTest {
         service.handleWebhook(body, signature)
 
         // Assert
-        verify { lineClient.reply("replyToken", "Reply Message") }
+        verify(timeout = 5000) { lineClient.reply("replyToken", "Reply Message") }
     }
 
     @Test
@@ -120,7 +80,7 @@ class LineBotServiceTest {
         service.handleWebhook(body, signature)
 
         // Assert
-        verify { lineClient.reply("replyToken", "Reply Message") }
+        verify(timeout = 5000) { lineClient.reply("replyToken", "Reply Message") }
     }
 
     @Test
@@ -188,5 +148,38 @@ class LineBotServiceTest {
 
         // Assert
         verify(exactly = 0) { lineClient.push(any(), any()) }
+    }
+
+    private fun createWebhookJson(vararg events: LineWebhookEvent.Event): String {
+        val webhook = LineWebhookEvent(botId, events.toList())
+        return json.encodeToString(webhook)
+    }
+
+    private fun createMessageEvent(
+        sourceType: SourceType = SourceType.USER,
+        messageType: MessageType = MessageType.TEXT,
+        mentionees: List<LineWebhookEvent.Mentionee> = emptyList()
+    ): LineWebhookEvent.Event {
+        val source = LineWebhookEvent.Source(
+            _type = sourceType.value,
+            userId = "U_USER_ID",
+            groupId = if (sourceType == SourceType.GROUP) "G_GROUP_ID" else null
+        )
+        val message = LineWebhookEvent.Message(
+            id = "msg1",
+            _type = messageType.value,
+            text = "hello",
+            mention = if (mentionees.isNotEmpty()) LineWebhookEvent.Mention(mentionees) else null
+        )
+        return LineWebhookEvent.Event(
+            _type = EventType.MESSAGE.value,
+            replyToken = "replyToken",
+            source = source,
+            timestamp = 1234567890,
+            mode = "active",
+            webhookEventId = "webhookEventId",
+            deliveryContext = LineWebhookEvent.DeliveryContext(false),
+            message = message
+        )
     }
 }

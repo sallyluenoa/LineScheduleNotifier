@@ -43,14 +43,6 @@ class WeeklyScheduleProviderTest {
     private val today = LocalDate.of(2026, 4, 15) // Wednesday
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
 
-    companion object {
-        @AfterAll
-        @JvmStatic
-        fun teardown() {
-            unmockkAll()
-        }
-    }
-
     @BeforeEach
     fun setup() {
         // Mock LocalDate.now()
@@ -71,7 +63,6 @@ class WeeklyScheduleProviderTest {
 
         weeklyScheduleProvider = WeeklyScheduleProvider(scheduleDataSource, messageProvider)
     }
-
 
     @Test
     fun testProvideMessage_singleEvent() {

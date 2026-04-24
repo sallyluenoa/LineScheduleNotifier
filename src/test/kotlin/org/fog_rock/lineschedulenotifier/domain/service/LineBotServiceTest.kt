@@ -16,6 +16,7 @@
 
 package org.fog_rock.lineschedulenotifier.domain.service
 
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -28,6 +29,7 @@ import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -52,6 +54,11 @@ class LineBotServiceTest {
             every { verify(any(), any()) } returns true
         }
         service = LineBotService(appDataSource, weeklyScheduleProvider, lineClient, verifier)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        clearAllMocks()
     }
 
     private fun createWebhookJson(vararg events: LineWebhookEvent.Event): String {

@@ -49,6 +49,9 @@ class GoogleWorkspaceDataSourceTest {
         }
         secretProvider = mockk(relaxed = true) {
             every { getSecret("google-api-credentials-key") } returns "{}" // Empty JSON for credentials
+            every { getSecret("spreadsheet-id-key") } returns "test-spreadsheet-id"
+            every { getSecret("folder-id-key") } returns "test-folder-id"
+            every { getSecret("filename-format-key-YYYYMM") } returns "test-format-YYYYMM"
         }
 
         dataSource = GoogleWorkspaceDataSource(config, secretProvider)
@@ -60,7 +63,7 @@ class GoogleWorkspaceDataSourceTest {
         dataSource.fetchDataByRange("test_range")
 
         // Assert
-        verify { secretProvider.getSecret(config.googleSheetsSpreadsheetIdKey) }
+        verify { secretProvider.getSecret("spreadsheet-id-key") }
     }
 
     @Test
@@ -84,8 +87,8 @@ class GoogleWorkspaceDataSourceTest {
         dataSource.fetchMonthlyData(yearMonth)
 
         // Assert
-        verify { secretProvider.getSecret(config.googleDriveFolderIdKey) }
-        verify { secretProvider.getSecret(config.googleSheetsFilenameFormatKey) }
+        verify { secretProvider.getSecret("folder-id-key") }
+        verify { secretProvider.getSecret("filename-format-key-YYYYMM") }
     }
 
     @Test

@@ -36,7 +36,7 @@ import java.time.format.DateTimeFormatter
 
 internal class GoogleWorkspaceDataSource(
     private val config: AppConfig,
-    private val secretManagerProvider: SecretProvider
+    private val secretProvider: SecretProvider
 ) : ScheduleDataSource, ApplicationDataSource {
     private val logger = LoggerFactory.getLogger(GoogleWorkspaceDataSource::class.java)
 
@@ -46,7 +46,7 @@ internal class GoogleWorkspaceDataSource(
     }
 
     private val credentials by lazy {
-        val credentialsJson = secretManagerProvider.getSecret(config.googleApiCredentialsKey)
+        val credentialsJson = secretProvider.getSecret(config.googleApiCredentialsKey)
         GoogleCredentials.fromStream(ByteArrayInputStream(credentialsJson.toByteArray()))
             .createScoped(listOf(
                 SheetsScopes.SPREADSHEETS_READONLY,
@@ -72,7 +72,7 @@ internal class GoogleWorkspaceDataSource(
 
     override fun fetchDataByRange(range: String): List<List<Any>> =
         try {
-            val spreadsheetId = secretManagerProvider.getSecret(config.googleSheetsSpreadsheetIdKey)
+            val spreadsheetId = secretProvider.getSecret(config.googleSheetsSpreadsheetIdKey)
             sheetsService.spreadsheets().values()
                 .get(spreadsheetId, range)
                 .execute()
@@ -84,8 +84,8 @@ internal class GoogleWorkspaceDataSource(
 
     override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> =
         try {
-            val folderId = secretManagerProvider.getSecret(config.googleDriveFolderIdKey)
-            val filenameFormat = secretManagerProvider.getSecret(config.googleSheetsFilenameFormatKey)
+            val folderId = secretProvider.getSecret(config.googleDriveFolderIdKey)
+            val filenameFormat = secretProvider.getSecret(config.googleSheetsFilenameFormatKey)
 
             val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN))
             val filename = filenameFormat.replace(FILENAME_REPLACE_TARGET, monthStr)

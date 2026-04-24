@@ -120,11 +120,9 @@ class WeeklyScheduleProvider(
         }
     }.sortedBy { it.first }
 
-    private fun buildScheduleMessage(scheduleRows: List<Pair<LocalDate, List<Any>>>): String {
+    private fun buildScheduleMessage(scheduleRows: List<Pair<LocalDate, List<Any>>>): String? {
         val messageDateFormatter = DateTimeFormatter.ofPattern(MSG_DATE_FORMAT)
-        val message = StringBuilder()
-        message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_TITLE))
-        message.append("\n\n")
+        val messageBody = StringBuilder()
 
         scheduleRows.forEach { (date, row) ->
             val events = row.getOrNull(COL_SCHEDULE_EVENTS)?.toString().orEmpty()
@@ -139,19 +137,28 @@ class WeeklyScheduleProvider(
             val dayOfWeek = row.getOrNull(COL_SCHEDULE_DAY_OF_WEEK)?.toString().orEmpty()
             val period = row.getOrNull(COL_SCHEDULE_PERIOD)?.toString().orEmpty()
 
-            message.append("[$dateStr($dayOfWeek) $period]\n")
+            messageBody.append("[$dateStr($dayOfWeek) $period]\n")
             val eventMessage = messageProvider.getMessage(
                 MessageKeys.SCHEDULE_WEEKLY_EVENTS,
                 events.ifBlank { messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_NONE) }
             )
-            message.append(eventMessage)
-            message.append("\n")
+            messageBody.append(eventMessage)
+            messageBody.append("\n")
             if (items.isNotBlank()) {
-                message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_ITEMS, items))
-                message.append("\n")
+                messageBody.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_ITEMS, items))
+                messageBody.append("\n")
             }
-            message.append("\n")
+            messageBody.append("\n")
         }
+
+        if (messageBody.isEmpty()) {
+            return null // No content was added, so return null
+        }
+
+        val message = StringBuilder()
+        message.append(messageProvider.getMessage(MessageKeys.SCHEDULE_WEEKLY_TITLE))
+        message.append("\n\n")
+        message.append(messageBody.toString().trim())
 
         return message.toString().trim()
     }

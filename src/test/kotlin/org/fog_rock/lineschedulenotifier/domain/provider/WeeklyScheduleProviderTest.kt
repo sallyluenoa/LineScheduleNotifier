@@ -51,8 +51,12 @@ class WeeklyScheduleProviderTest {
         messageProvider = mockk(relaxed = true) {
             every { getMessage(MessageKeys.SCHEDULE_WEEKLY_TITLE) } returns "Weekly Schedule"
             every { getMessage(MessageKeys.SCHEDULE_WEEKLY_NONE) } returns "None"
-            every { getMessage(MessageKeys.SCHEDULE_WEEKLY_EVENTS, any()) } answers { "Events: ${firstArg<String>()}" }
-            every { getMessage(MessageKeys.SCHEDULE_WEEKLY_ITEMS, any()) } answers { "Items: ${firstArg<String>()}" }
+            every { getMessage(MessageKeys.SCHEDULE_WEEKLY_EVENTS, any()) } answers {
+                "Events: ${(invocation.args[1] as Array<*>)[0]}"
+            }
+            every { getMessage(MessageKeys.SCHEDULE_WEEKLY_ITEMS, any()) } answers {
+                "Items: ${(invocation.args[1] as Array<*>)[0]}"
+            }
         }
 
         weeklyScheduleProvider = WeeklyScheduleProvider(scheduleDataSource, messageProvider)

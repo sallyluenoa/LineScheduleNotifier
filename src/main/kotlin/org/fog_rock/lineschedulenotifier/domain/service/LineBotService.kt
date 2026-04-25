@@ -48,14 +48,28 @@ class LineBotService(
     }
 
     override fun createReplyMessage(event: LineWebhookEvent.Event, botId: String): String? {
-        if (!shouldReply(event, botId)) {
+        val source = shouldReply(event, botId) ?: run {
             logger.info("Should not reply to the event.")
             return null
         }
 
-        // Request Data from Sheets
-        val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_WEBHOOK)
-        return sheetData.getOrNull(0)?.getOrNull(0)?.toString()
+        // `shouldReply` ensures that `event.message` is a non-null text message.
+        val messageText = event.message?.text
+        if (messageText.isNullOrBlank()) {
+            logger.warn("Message text is null or blank.")
+            return null
+        }
+
+        return when {
+            messageText.contains("user_id", ignoreCase = true) -> source.userId
+            messageText.contains("group_id", ignoreCase = true) -> source.groupId
+            messageText.contains("schedule", ignoreCase = true) -> weeklyScheduleProvider.provideMessage()
+            else -> {
+                // Request Data from Sheets
+                val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_WEBHOOK)
+                sheetData.getOrNull(0)?.getOrNull(0)?.toString()
+            }
+        }
     }
 
     override fun createPushNotifications(): List<Notification> {
@@ -89,31 +103,31 @@ class LineBotService(
         return sheetData.drop(1).mapNotNull { it.getOrNull(0)?.toString() }
     }
 
-    private fun shouldReply(event: LineWebhookEvent.Event, botId: String): Boolean {
+    private fun shouldReply(event: LineWebhookEvent.Event, botId: String): LineWebhookEvent.Source? {
         if (event.eventType != EventType.MESSAGE) {
             logger.info("The event type is not message. eventType: ${event.eventType}")
-            return false
+            return null
         }
         val message = event.message
         if (message?.messageType != MessageType.TEXT) {
             logger.info("The message type is not text. messageType: ${message?.messageType}")
-            return false
+            return null
         }
         val source = event.source
         logger.info("sourceType: ${source?.sourceType}")
         return when (source?.sourceType) {
             SourceType.USER -> {
                 logger.info("Source type is USER. Replying.")
-                true
+                source
             }
             SourceType.GROUP -> {
                 val shouldReplyToGroup = message.mention?.mentionees?.any { it.userId == botId } ?: false
                 logger.info("Source type is GROUP. Bot mentioned: $shouldReplyToGroup")
-                shouldReplyToGroup
+                if (shouldReplyToGroup) source else null
             }
             else -> {
                 logger.info("Source type is ${source?.sourceType}. Not replying.")
-                false
+                null
             }
         }
     }

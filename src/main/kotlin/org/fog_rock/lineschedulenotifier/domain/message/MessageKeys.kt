@@ -32,4 +32,5 @@ object MessageKeys {
 
     const val ERROR_INVALID_CONTEXT_FOR_USER_ID = "error.invalidContextForUserId"
     const val ERROR_INVALID_CONTEXT_FOR_GROUP_ID = "error.invalidContextForGroupId"
+    const val ERROR_MULTIPLE_COMMANDS = "error.multipleCommands"
 }

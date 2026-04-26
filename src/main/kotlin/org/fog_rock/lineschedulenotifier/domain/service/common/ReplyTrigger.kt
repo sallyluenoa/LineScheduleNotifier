@@ -39,12 +39,12 @@ enum class ReplyTrigger(private val regex: Regex) {
 
     companion object {
         /**
-         * Determines the [ReplyTrigger] from the given text.
+         * Finds all [ReplyTrigger]s present in the given text.
          *
-         * @param text The input text to match against the trigger patterns.
-         * @return The first matching [ReplyTrigger], or `null` if no match is found.
+         * @param text The input text to match against trigger patterns.
+         * @return A [Set] of all matching [ReplyTrigger]s. Returns an empty set if no matches are found.
          */
-        fun from(text: String): ReplyTrigger? =
-            entries.find { it.regex.containsMatchIn(text) }
+        fun fromAll(text: String): Set<ReplyTrigger> =
+            entries.filter { it.regex.containsMatchIn(text) }.toSet()
     }
 }

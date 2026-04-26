@@ -64,10 +64,14 @@ class LineBotService(
             return null
         }
 
-        val trigger = ReplyTrigger.from(messageText)
-        logger.info("Detected trigger: $trigger for message: '$messageText'")
+        val triggers = ReplyTrigger.fromAll(messageText)
+        logger.info("Detected triggers: $triggers for message: '$messageText'")
 
-        return when (trigger) {
+        if (triggers.size > 1) {
+            return messageProvider.getMessage(MessageKeys.ERROR_MULTIPLE_COMMANDS)
+        }
+
+        return when (triggers.firstOrNull()) {
             ReplyTrigger.USER_ID -> createUserIdMessage(source)
             ReplyTrigger.GROUP_ID -> createGroupIdMessage(source)
             ReplyTrigger.SCHEDULE -> weeklyScheduleProvider.provideMessage()

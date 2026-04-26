@@ -178,6 +178,22 @@ class LineBotServiceTest {
     }
 
     @Test
+    fun testHandleWebhook_replyWithMultipleCommandsError() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "user id and schedule")
+        val body = createWebhookJson(event)
+        val expectedReply = "Multiple commands were detected."
+        every { messageProvider.getMessage(MessageKeys.ERROR_MULTIPLE_COMMANDS) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+        verify { messageProvider.getMessage(MessageKeys.ERROR_MULTIPLE_COMMANDS) }
+    }
+
+    @Test
     fun testExecutePush_pushNotifications() {
         // Arrange
         every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))

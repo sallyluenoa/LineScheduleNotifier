@@ -17,64 +17,66 @@
 package org.fog_rock.lineschedulenotifier.domain.service.common
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
+@DisplayName("ReplyTrigger.fromAll Tests")
 class ReplyTriggerTest {
 
-    @Nested
-    @DisplayName("USER_ID Trigger")
-    inner class UserIdTrigger {
-        @ParameterizedTest
-        @ValueSource(strings = [
-            "user id", "user_id", "userid", "ユーザーid", "my id", "あなたのid",
-            "USER ID", "My Id", "  user id  ", "what is my user id?"
-        ])
-        fun testFrom_userIdKeywords_returnUserId(keyword: String) {
-            assertEquals(ReplyTrigger.USER_ID, ReplyTrigger.from(keyword))
-        }
-    }
-
-    @Nested
-    @DisplayName("GROUP_ID Trigger")
-    inner class GroupIdTrigger {
-        @ParameterizedTest
-        @ValueSource(strings = [
-            "group id", "group_id", "groupid", "グループid",
-            "GROUP ID", "Group_Id", "  group id  ", "tell me the group id"
-        ])
-        fun testFrom_groupIdKeywords_returnGroupId(keyword: String) {
-            assertEquals(ReplyTrigger.GROUP_ID, ReplyTrigger.from(keyword))
-        }
-    }
-
-    @Nested
-    @DisplayName("SCHEDULE Trigger")
-    inner class ScheduleTrigger {
-        @ParameterizedTest
-        @ValueSource(strings = ["schedule", "予定", "SCHEDULE", "　予定　"])
-        fun testFrom_scheduleKeywords_returnSchedule(keyword: String) {
-            assertEquals(ReplyTrigger.SCHEDULE, ReplyTrigger.from(keyword))
-        }
+    @Test
+    fun testFromAll_noTrigger_returnEmptySet() {
+        assertEquals(emptySet<ReplyTrigger>(), ReplyTrigger.fromAll("hello world"))
     }
 
     @Test
-    fun testFrom_unknownKeyword_returnNull() {
-        assertNull(ReplyTrigger.from("hello world"))
+    fun testFromAll_emptyString_returnEmptySet() {
+        assertEquals(emptySet<ReplyTrigger>(), ReplyTrigger.fromAll(""))
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = [
+        "user id", "user_id", "userid", "ユーザーid", "my id", "あなたのid",
+        "USER ID", "My Id", "  user id  ", "what is my user id?"
+    ])
+    fun testFromAll_onlyUserId_returnUserIdSet(keyword: String) {
+        assertEquals(setOf(ReplyTrigger.USER_ID), ReplyTrigger.fromAll(keyword))
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = [
+        "group id", "group_id", "groupid", "グループid",
+        "GROUP ID", "Group_Id", "  group id  ", "tell me the group id"
+    ])
+    fun testFromAll_onlyGroupId_returnGroupIdSet(keyword: String) {
+        assertEquals(setOf(ReplyTrigger.GROUP_ID), ReplyTrigger.fromAll(keyword))
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["schedule", "予定", "SCHEDULE", "　予定　"])
+    fun testFromAll_onlySchedule_returnScheduleSet(keyword: String) {
+        assertEquals(setOf(ReplyTrigger.SCHEDULE), ReplyTrigger.fromAll(keyword))
     }
 
     @Test
-    fun testFrom_emptyString_returnNull() {
-        assertNull(ReplyTrigger.from(""))
+    fun testFromAll_allTriggers_returnAllTriggersSet() {
+        val text = "show my user id, group id, and the 予定"
+        val expected = setOf(ReplyTrigger.USER_ID, ReplyTrigger.GROUP_ID, ReplyTrigger.SCHEDULE)
+        assertEquals(expected, ReplyTrigger.fromAll(text))
     }
 
     @Test
-    fun testFrom_multipleKeywords_returnFirstMatch() {
-        // USER_ID is declared before GROUP_ID and SCHEDULE in the enum, so it should be matched first.
-        assertEquals(ReplyTrigger.USER_ID, ReplyTrigger.from("show my user id and the schedule"))
+    fun testFromAll_duplicateTriggers_returnUniqueTriggersSet() {
+        val text = "user id, what is my USER ID?"
+        val expected = setOf(ReplyTrigger.USER_ID)
+        assertEquals(expected, ReplyTrigger.fromAll(text))
+    }
+
+    @Test
+    fun testFromAll_mixedCaseAndKeywords_returnAllTriggersSet() {
+        val text = "Show my USER ID and the SCHEDULE."
+        val expected = setOf(ReplyTrigger.USER_ID, ReplyTrigger.SCHEDULE)
+        assertEquals(expected, ReplyTrigger.fromAll(text))
     }
 }

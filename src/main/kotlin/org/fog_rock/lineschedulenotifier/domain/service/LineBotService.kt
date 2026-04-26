@@ -24,6 +24,8 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
+import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
+import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
 import org.slf4j.LoggerFactory
@@ -33,6 +35,7 @@ import org.slf4j.LoggerFactory
  */
 class LineBotService(
     private val appDataSource: ApplicationDataSource,
+    private val messageProvider: MessageProvider,
     private val weeklyScheduleProvider: WeeklyScheduleProvider,
     lineClient: LineClient,
     verifier: SignatureVerifier
@@ -61,8 +64,10 @@ class LineBotService(
         }
 
         return when {
-            messageText.contains("user_id", ignoreCase = true) -> source.userId
-            messageText.contains("group_id", ignoreCase = true) -> source.groupId
+            messageText.contains("user_id", ignoreCase = true) ->
+                source.userId?.let { messageProvider.getMessage(MessageKeys.REPLY_USER_ID, it) }
+            messageText.contains("group_id", ignoreCase = true) ->
+                source.groupId?.let { messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, it) }
             messageText.contains("schedule", ignoreCase = true) -> weeklyScheduleProvider.provideMessage()
             else -> {
                 // Request Data from Sheets

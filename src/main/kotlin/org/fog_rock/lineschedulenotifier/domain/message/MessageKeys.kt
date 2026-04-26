@@ -24,4 +24,7 @@ object MessageKeys {
     const val SCHEDULE_WEEKLY_EVENTS = "schedule.weekly.events"
     const val SCHEDULE_WEEKLY_ITEMS = "schedule.weekly.items"
     const val SCHEDULE_WEEKLY_NONE = "schedule.weekly.none"
+
+    const val REPLY_USER_ID = "reply.user.id"
+    const val REPLY_GROUP_ID = "reply.group.id"
 }

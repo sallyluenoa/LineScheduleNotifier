@@ -29,4 +29,7 @@ object MessageKeys {
     const val REPLY_GROUP_ID = "reply.group.id"
 
     const val REPLY_UNKNOWN_COMMAND = "reply.unknown.command"
+
+    const val ERROR_INVALID_CONTEXT_FOR_USER_ID = "error.invalidContextForUserId"
+    const val ERROR_INVALID_CONTEXT_FOR_GROUP_ID = "error.invalidContextForGroupId"
 }

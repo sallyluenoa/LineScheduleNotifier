@@ -218,6 +218,46 @@ class LineBotServiceTest {
         verify(exactly = 0) { lineClient.push(any(), any()) }
     }
 
+    @Test
+    fun testCreateReplyMessage_returnsErrorOnUserIdInGroup() {
+        // Arrange
+        val event = createMessageEvent(
+            sourceType = SourceType.GROUP,
+            text = "user id",
+            mentionees = listOf(LineWebhookEvent.Mentionee(0, 5, botId))
+        )
+        val body = createWebhookJson(event)
+        val expectedReply = "Acquisition of user ID is only available in personal chats."
+        every { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_USER_ID) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+        verify { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_USER_ID) }
+    }
+
+    @Test
+    fun testCreateReplyMessage_returnsErrorOnGroupIdInUserChat() {
+        // Arrange
+        val event = createMessageEvent(
+            sourceType = SourceType.USER,
+            text = "group id"
+        )
+        val body = createWebhookJson(event)
+        val expectedReply = "Acquisition of group ID is only available in group chats."
+        every { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_GROUP_ID) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+        verify { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_GROUP_ID) }
+    }
+
+
     private fun createWebhookJson(vararg events: LineWebhookEvent.Event): String {
         val webhook = LineWebhookEvent(botId, events.toList())
         return json.encodeToString(webhook)
@@ -231,7 +271,7 @@ class LineBotServiceTest {
     ): LineWebhookEvent.Event {
         val source = LineWebhookEvent.Source(
             _type = sourceType.value,
-            userId = "U_USER_ID",
+            userId = if (sourceType == SourceType.USER) "U_USER_ID" else null,
             groupId = if (sourceType == SourceType.GROUP) "G_GROUP_ID" else null
         )
         val message = LineWebhookEvent.Message(

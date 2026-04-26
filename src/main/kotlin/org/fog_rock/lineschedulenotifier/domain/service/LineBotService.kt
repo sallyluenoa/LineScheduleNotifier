@@ -68,10 +68,8 @@ class LineBotService(
         logger.info("Detected trigger: $trigger for message: '$messageText'")
 
         return when (trigger) {
-            ReplyTrigger.USER_ID ->
-                source.userId?.let { messageProvider.getMessage(MessageKeys.REPLY_USER_ID, it) }
-            ReplyTrigger.GROUP_ID ->
-                source.groupId?.let { messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, it) }
+            ReplyTrigger.USER_ID -> createUserIdMessage(source)
+            ReplyTrigger.GROUP_ID -> createGroupIdMessage(source)
             ReplyTrigger.SCHEDULE -> weeklyScheduleProvider.provideMessage()
             null -> messageProvider.getMessage(MessageKeys.REPLY_UNKNOWN_COMMAND)
         }
@@ -135,5 +133,37 @@ class LineBotService(
                 null
             }
         }
+    }
+
+    /**
+     * Creates a message containing the user ID.
+     * If not in a user context, it logs a warning and returns an error message.
+     */
+    private fun createUserIdMessage(source: LineWebhookEvent.Source): String {
+        // If the user ID cannot be retrieved, output a log, return an error message, and exit the function (Guard-Clause).
+        val userId = source.userId ?: run {
+            logger.warn(
+                "Attempted to get USER_ID in a non-user context. sourceType: ${source.sourceType}"
+            )
+            return messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_USER_ID)
+        }
+        // From here on, it is guaranteed that userId is non-null.
+        return messageProvider.getMessage(MessageKeys.REPLY_USER_ID, userId)
+    }
+
+    /**
+     * Creates a message containing the group ID.
+     * If not in a group context, it logs a warning and returns an error message.
+     */
+    private fun createGroupIdMessage(source: LineWebhookEvent.Source): String {
+        // If the group ID cannot be retrieved, output a log, return an error message, and exit the function (Guard-Clause).
+        val groupId = source.groupId ?: run {
+            logger.warn(
+                "Attempted to get GROUP_ID in a non-group context. sourceType: ${source.sourceType}"
+            )
+            return messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_GROUP_ID)
+        }
+        // From here on, it is guaranteed that groupId is non-null.
+        return messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, groupId)
     }
 }

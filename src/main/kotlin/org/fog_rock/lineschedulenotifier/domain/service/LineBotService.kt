@@ -73,11 +73,7 @@ class LineBotService(
             ReplyTrigger.GROUP_ID ->
                 source.groupId?.let { messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, it) }
             ReplyTrigger.SCHEDULE -> weeklyScheduleProvider.provideMessage()
-            null -> {
-                // Request Data from Sheets
-                val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_WEBHOOK)
-                sheetData.getOrNull(0)?.getOrNull(0)?.toString()
-            }
+            null -> messageProvider.getMessage(MessageKeys.REPLY_UNKNOWN_COMMAND)
         }
     }
 

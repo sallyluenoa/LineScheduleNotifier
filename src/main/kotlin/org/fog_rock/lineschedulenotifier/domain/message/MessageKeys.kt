@@ -27,4 +27,6 @@ object MessageKeys {
 
     const val REPLY_USER_ID = "reply.user.id"
     const val REPLY_GROUP_ID = "reply.group.id"
+
+    const val REPLY_UNKNOWN_COMMAND = "reply.unknown.command"
 }

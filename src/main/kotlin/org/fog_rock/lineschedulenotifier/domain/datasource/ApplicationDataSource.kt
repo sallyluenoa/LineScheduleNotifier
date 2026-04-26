@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package org.fog_rock.lineschedulenotifier.domain.repository
-
-import java.time.YearMonth
+package org.fog_rock.lineschedulenotifier.domain.datasource
 
 /**
- * Interface for accessing schedule data.
+ * Interface for accessing general application data.
  */
-interface ScheduleDataSource {
+interface ApplicationDataSource {
     /**
-     * Fetches schedule data for a specific month.
+     * Fetches raw data from a specified range.
+     * This is typically used for accessing data with a fixed location,
+     * such as a list of notification destinations.
      *
-     * @param yearMonth The year and month to fetch data for.
+     * @param range The A1 notation of the range to retrieve (e.g., "Sheet1!A1:B2").
      * @return A list of rows, where each row is a list of cell values.
      */
-    fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>>
+    fun fetchDataByRange(range: String): List<List<Any>>
 }

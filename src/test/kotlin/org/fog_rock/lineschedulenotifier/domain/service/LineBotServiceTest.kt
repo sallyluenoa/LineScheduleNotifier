@@ -29,7 +29,7 @@ import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -59,7 +59,7 @@ class LineBotServiceTest {
         }
         service = LineBotService(appDataSource, messageProvider, weeklyScheduleProvider, lineClient, verifier)
     }
-    
+
     @Test
     fun testHandleWebhook_noReplyOnBlankMessage() {
         // Arrange

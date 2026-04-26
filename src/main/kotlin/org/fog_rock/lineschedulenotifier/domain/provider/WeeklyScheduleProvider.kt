@@ -18,7 +18,7 @@ package org.fog_rock.lineschedulenotifier.domain.provider
 
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ScheduleDataSource
 import org.fog_rock.lineschedulenotifier.extension.isBetween
 import org.slf4j.LoggerFactory
 import java.time.LocalDate

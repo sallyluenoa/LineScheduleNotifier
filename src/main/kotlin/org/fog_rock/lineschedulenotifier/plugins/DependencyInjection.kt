@@ -21,8 +21,8 @@ import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ScheduleDataSource
 import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
 import org.fog_rock.lineschedulenotifier.infrastructure.config.KtorAppConfig
 import org.fog_rock.lineschedulenotifier.infrastructure.datasource.GoogleWorkspaceDataSource

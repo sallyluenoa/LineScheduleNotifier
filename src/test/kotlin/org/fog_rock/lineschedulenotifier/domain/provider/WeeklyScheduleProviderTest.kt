@@ -19,7 +19,6 @@ package org.fog_rock.lineschedulenotifier.domain.provider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import io.mockk.unmockkAll
 import java.time.LocalDate
 import java.time.YearMonth
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
@@ -27,10 +26,9 @@ import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ScheduleDataSource
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

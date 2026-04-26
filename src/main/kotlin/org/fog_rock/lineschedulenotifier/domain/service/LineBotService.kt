@@ -27,7 +27,7 @@ import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
 import org.fog_rock.lineschedulenotifier.domain.service.common.ReplyTrigger
 import org.slf4j.LoggerFactory
 

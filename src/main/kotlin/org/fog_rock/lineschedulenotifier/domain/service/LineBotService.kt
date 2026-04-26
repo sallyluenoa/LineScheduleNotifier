@@ -28,6 +28,7 @@ import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.service.common.ReplyTrigger
 import org.slf4j.LoggerFactory
 
 /**
@@ -63,13 +64,16 @@ class LineBotService(
             return null
         }
 
-        return when {
-            messageText.contains("user_id", ignoreCase = true) ->
+        val trigger = ReplyTrigger.from(messageText)
+        logger.info("Detected trigger: $trigger for message: '$messageText'")
+
+        return when (trigger) {
+            ReplyTrigger.USER_ID ->
                 source.userId?.let { messageProvider.getMessage(MessageKeys.REPLY_USER_ID, it) }
-            messageText.contains("group_id", ignoreCase = true) ->
+            ReplyTrigger.GROUP_ID ->
                 source.groupId?.let { messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, it) }
-            messageText.contains("schedule", ignoreCase = true) -> weeklyScheduleProvider.provideMessage()
-            else -> {
+            ReplyTrigger.SCHEDULE -> weeklyScheduleProvider.provideMessage()
+            null -> {
                 // Request Data from Sheets
                 val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_WEBHOOK)
                 sheetData.getOrNull(0)?.getOrNull(0)?.toString()

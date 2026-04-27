@@ -41,8 +41,7 @@ internal class GoogleWorkspaceDataSource(
     private val logger = LoggerFactory.getLogger(GoogleWorkspaceDataSource::class.java)
 
     companion object {
-        private const val DATE_FORMAT_PATTERN = "yyyyMM"
-        private const val FILENAME_REPLACE_TARGET = "YYYYMM"
+        private const val YEAR_MONTH_PATTERN = "yyyyMM"
     }
 
     private val credentials by lazy {
@@ -87,8 +86,8 @@ internal class GoogleWorkspaceDataSource(
             val folderId = secretProvider.getSecret(config.googleDriveFolderIdKey)
             val filenameFormat = secretProvider.getSecret(config.googleSheetsFilenameFormatKey)
 
-            val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN))
-            val filename = filenameFormat.replace(FILENAME_REPLACE_TARGET, monthStr)
+            val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(YEAR_MONTH_PATTERN))
+            val filename = filenameFormat.replace(YEAR_MONTH_PATTERN, monthStr)
 
             val fileId = findFileId(filename, folderId) ?: run {
                 logger.info("File not found for month: $monthStr")

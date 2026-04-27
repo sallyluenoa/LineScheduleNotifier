@@ -45,8 +45,6 @@ class LineBotService(
     private val logger = LoggerFactory.getLogger(LineBotService::class.java)
 
     companion object {
-        // Default range for webhook data retrieval
-        private const val SHEET_RANGE_WEBHOOK = "webhook"
         // Default range for scheduled push notifications (To, Message)
         private const val SHEET_RANGE_PUSH = "push"
     }
@@ -139,10 +137,6 @@ class LineBotService(
         }
     }
 
-    /**
-     * Creates a message containing the user ID.
-     * If not in a user context, it logs a warning and returns an error message.
-     */
     private fun createUserIdMessage(source: LineWebhookEvent.Source): String {
         // If the user ID cannot be retrieved, output a log, return an error message, and exit the function (Guard-Clause).
         val userId = source.userId ?: run {
@@ -155,10 +149,6 @@ class LineBotService(
         return messageProvider.getMessage(MessageKeys.REPLY_USER_ID, userId)
     }
 
-    /**
-     * Creates a message containing the group ID.
-     * If not in a group context, it logs a warning and returns an error message.
-     */
     private fun createGroupIdMessage(source: LineWebhookEvent.Source): String {
         // If the group ID cannot be retrieved, output a log, return an error message, and exit the function (Guard-Clause).
         val groupId = source.groupId ?: run {

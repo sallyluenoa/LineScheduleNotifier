@@ -24,6 +24,7 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory
  * Service class for handling LINE Bot operations.
  */
 class LineBotService(
+    private val config: AppConfig,
     private val appDataSource: ApplicationDataSource,
     private val messageProvider: MessageProvider,
     private val weeklyScheduleProvider: WeeklyScheduleProvider,
@@ -99,7 +101,7 @@ class LineBotService(
     }
 
     private fun fetchRecipients(): List<String> {
-        val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_PUSH)
+        val sheetData = appDataSource.fetchDataByKey(config.googleSheetsSpreadsheetIdKey, SHEET_RANGE_PUSH)
         if (sheetData.size <= 1) { // Check for header
             logger.info("No recipient data or only header found in sheet.")
             return emptyList()

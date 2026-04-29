@@ -27,7 +27,7 @@ import java.util.Locale
 internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
     private val logger = LoggerFactory.getLogger(MockDataSource::class.java)
 
-    override fun fetchDataByRange(range: String): List<List<Any>> {
+    override fun fetchDataByKey(spreadsheetIdKey: String, range: String): List<List<Any>> {
         logger.info("Mock fetchDataByRange called with range: $range")
         return getMockDataForRange(range)
     }

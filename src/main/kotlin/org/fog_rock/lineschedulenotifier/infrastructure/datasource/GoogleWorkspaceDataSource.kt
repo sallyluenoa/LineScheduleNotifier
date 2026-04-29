@@ -69,13 +69,10 @@ internal class GoogleWorkspaceDataSource(
             .build()
     }
 
-    override fun fetchDataByRange(range: String): List<List<Any>> =
+    override fun fetchDataByKey(spreadsheetIdKey: String, range: String): List<List<Any>> =
         try {
-            val spreadsheetId = secretProvider.getSecret(config.googleSheetsSpreadsheetIdKey)
-            sheetsService.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute()
-                .getValues()
+            val spreadsheetId = secretProvider.getSecret(spreadsheetIdKey)
+            fetchSheetData(spreadsheetId, range)
         } catch (e: Exception) {
             logger.error("Failed to fetch data from Google Sheets. Range: $range", e)
             emptyList()
@@ -93,10 +90,7 @@ internal class GoogleWorkspaceDataSource(
                 logger.info("File not found for month: $monthStr")
                 return emptyList()
             }
-            sheetsService.spreadsheets().values()
-                .get(fileId, filename)
-                .execute()
-                .getValues()
+            fetchSheetData(fileId, filename)
         } catch (e: Exception) {
             logger.error("Failed to fetch scheduled data from Google Sheets for month: $yearMonth", e)
             emptyList()
@@ -122,4 +116,15 @@ internal class GoogleWorkspaceDataSource(
             logger.error("Failed to find file with name '$name' in folder '$folderId'.", e)
             null
         }
+
+    @Throws(IOException::class)
+    private fun fetchSheetData(spreadsheetId: String, range: String): List<List<Any>> =
+        sheetsService.spreadsheets().values()
+            .get(spreadsheetId, range)
+            .execute()
+            .getValues()
+            ?: run {
+                logger.info("No values found in Google Sheets. ID: $spreadsheetId, Range: $range. Returning empty list.")
+                emptyList()
+            }
 }

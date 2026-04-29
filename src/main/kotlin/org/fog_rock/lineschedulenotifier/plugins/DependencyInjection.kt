@@ -52,7 +52,7 @@ fun appModule(app: Application) = module {
         }
     } binds arrayOf(ApplicationDataSource::class)
     single { WeeklyScheduleProvider(get(), get()) }
-    single { LineBotService(get(), get(), get(), get(), get()) }
+    single { LineBotService(get(), get(), get(), get(), get(), get()) }
     single { WebhookRoute(get()) }
     single { PushTriggerRoute(get()) }
 }

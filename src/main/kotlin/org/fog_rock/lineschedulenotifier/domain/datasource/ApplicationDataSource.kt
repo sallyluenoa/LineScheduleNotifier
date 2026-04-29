@@ -21,12 +21,13 @@ package org.fog_rock.lineschedulenotifier.domain.datasource
  */
 interface ApplicationDataSource {
     /**
-     * Fetches raw data from a specified range.
+     * Fetches raw data from a spreadsheet using a key to identify the spreadsheet.
      * This is typically used for accessing data with a fixed location,
      * such as a list of notification destinations.
      *
+     * @param spreadsheetIdKey The key to identify the spreadsheet ID.
      * @param range The A1 notation of the range to retrieve (e.g., "Sheet1!A1:B2").
      * @return A list of rows, where each row is a list of cell values.
      */
-    fun fetchDataByRange(range: String): List<List<Any>>
+    fun fetchDataByKey(spreadsheetIdKey: String, range: String): List<List<Any>>
 }

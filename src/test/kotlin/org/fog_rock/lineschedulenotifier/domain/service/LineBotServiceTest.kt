@@ -26,10 +26,11 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.MessageType
 import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
-import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -37,6 +38,7 @@ import org.junit.jupiter.params.provider.ValueSource
 
 class LineBotServiceTest {
 
+    private lateinit var config: AppConfig
     private lateinit var appDataSource: ApplicationDataSource
     private lateinit var weeklyScheduleProvider: WeeklyScheduleProvider
     private lateinit var messageProvider: MessageProvider
@@ -50,6 +52,9 @@ class LineBotServiceTest {
 
     @BeforeEach
     fun setUp() {
+        config = mockk(relaxed = true) {
+            every { googleSheetsSpreadsheetIdKey } returns "test_spreadsheet_id_key"
+        }
         appDataSource = mockk(relaxed = true)
         weeklyScheduleProvider = mockk(relaxed = true)
         messageProvider = mockk(relaxed = true)
@@ -57,7 +62,7 @@ class LineBotServiceTest {
         verifier = mockk(relaxed = true) {
             every { verify(any(), any()) } returns true
         }
-        service = LineBotService(appDataSource, messageProvider, weeklyScheduleProvider, lineClient, verifier)
+        service = LineBotService(config, appDataSource, messageProvider, weeklyScheduleProvider, lineClient, verifier)
     }
 
     @Test
@@ -196,7 +201,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_pushNotifications() {
         // Arrange
-        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))
+        every { appDataSource.fetchDataByKey("test_spreadsheet_id_key", "push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))
         every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
         every { lineClient.push(any(), any()) } returns Result.success(Unit)
 
@@ -211,7 +216,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_noRecipients() {
         // Arrange
-        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"))
+        every { appDataSource.fetchDataByKey("test_spreadsheet_id_key", "push") } returns listOf(listOf("header"))
         every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
 
         // Act
@@ -224,7 +229,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_nullMessage() {
         // Arrange
-        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"))
+        every { appDataSource.fetchDataByKey("test_spreadsheet_id_key", "push") } returns listOf(listOf("header"), listOf("user1"))
         every { weeklyScheduleProvider.provideMessage() } returns null
 
         // Act
@@ -235,7 +240,7 @@ class LineBotServiceTest {
     }
 
     @Test
-    fun testCreateReplyMessage_returnsErrorOnUserIdInGroup() {
+    fun testHandleWebhook_invalidContextForUserId() {
         // Arrange
         val event = createMessageEvent(
             sourceType = SourceType.GROUP,
@@ -255,7 +260,7 @@ class LineBotServiceTest {
     }
 
     @Test
-    fun testCreateReplyMessage_returnsErrorOnGroupIdInUserChat() {
+    fun testHandleWebhook_invalidContextForGroupId() {
         // Arrange
         val event = createMessageEvent(
             sourceType = SourceType.USER,

@@ -33,8 +33,8 @@ class MockDataSourceTest {
     }
 
     @Test
-    fun testFetchDataByRange_push() {
-        val result = dataSource.fetchDataByRange("push")
+    fun testFetchDataByKey_push() {
+        val result = dataSource.fetchDataByKey("mock_key", "push")
         val expected = listOf(
             listOf("to"), // Header
             listOf("U_MOCK_ID_1"),
@@ -44,8 +44,8 @@ class MockDataSourceTest {
     }
 
     @Test
-    fun testFetchDataByRange_webhook() {
-        val result = dataSource.fetchDataByRange("webhook")
+    fun testFetchDataByKey_webhook() {
+        val result = dataSource.fetchDataByKey("mock_key", "webhook")
         val expected = listOf(
             listOf("This is a mock reply message.")
         )
@@ -53,28 +53,28 @@ class MockDataSourceTest {
     }
 
     @Test
-    fun testFetchDataByRange_unknown() {
-        val result = dataSource.fetchDataByRange("unknown_range")
+    fun testFetchDataByKey_unknown() {
+        val result = dataSource.fetchDataByKey("mock_key", "unknown_range")
         assertTrue(result.isEmpty())
     }
 
     @Test
-    fun testFetchMonthlyData_30DayMonth() {
+    fun testFetchMonthlyData_for30DayMonth() {
         assertMonthlyData(YearMonth.of(2026, 4), 30) // April
     }
 
     @Test
-    fun testFetchMonthlyData_31DayMonth() {
+    fun testFetchMonthlyData_for31DayMonth() {
         assertMonthlyData(YearMonth.of(2026, 5), 31) // May
     }
 
     @Test
-    fun testFetchMonthlyData_February() {
+    fun testFetchMonthlyData_forFebruary() {
         assertMonthlyData(YearMonth.of(2026, 2), 28) // February
     }
 
     @Test
-    fun testFetchMonthlyData_LeapFebruary() {
+    fun testFetchMonthlyData_forLeapFebruary() {
         assertMonthlyData(YearMonth.of(2024, 2), 29) // Leap February
     }
 

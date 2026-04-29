@@ -43,36 +43,38 @@ class GoogleWorkspaceDataSourceTest {
     fun setup() {
         config = mockk(relaxed = true) {
             every { googleApiCredentialsKey } returns "google-api-credentials-key"
-            every { googleSheetsSpreadsheetIdKey } returns "spreadsheet-id-key"
             every { googleDriveFolderIdKey } returns "folder-id-key"
-            every { googleSheetsFilenameFormatKey } returns "filename-format-key-yyyyMM"
+            every { googleSheetsFilenameFormatKey } returns "google-sheets-filename-format-key"
         }
         secretProvider = mockk(relaxed = true) {
             every { getSecret("google-api-credentials-key") } returns "{}" // Empty JSON for credentials
-            every { getSecret("spreadsheet-id-key") } returns "test-spreadsheet-id"
             every { getSecret("folder-id-key") } returns "test-folder-id"
-            every { getSecret("filename-format-key-yyyyMM") } returns "test-format-yyyyMM"
+            every { getSecret("google-sheets-filename-format-key") } returns "test-format-yyyyMM"
         }
 
         dataSource = GoogleWorkspaceDataSource(config, secretProvider)
     }
 
     @Test
-    fun testFetchDataByRange_requestsSpreadsheetId() {
+    fun testFetchDataByKey_requestsSpreadsheetId() {
+        // Arrange
+        val spreadsheetIdKey = "test-spreadsheet-id-key"
+        
         // Act
-        dataSource.fetchDataByRange("test_range")
+        dataSource.fetchDataByKey(spreadsheetIdKey, "test_range")
 
         // Assert
-        verify { secretProvider.getSecret("spreadsheet-id-key") }
+        verify { secretProvider.getSecret(spreadsheetIdKey) }
     }
 
     @Test
-    fun testFetchDataByRange_returnsEmptyListOnFailure() {
+    fun testFetchDataByKey_returnsEmptyListOnFailure() {
         // Arrange
-        every { secretProvider.getSecret(config.googleSheetsSpreadsheetIdKey) } throws RuntimeException("Test Exception")
+        val spreadsheetIdKey = "test-spreadsheet-id-key"
+        every { secretProvider.getSecret(spreadsheetIdKey) } throws RuntimeException("Test Exception")
 
         // Act
-        val result = dataSource.fetchDataByRange("test_range")
+        val result = dataSource.fetchDataByKey(spreadsheetIdKey, "test_range")
 
         // Assert
         assertTrue(result.isEmpty())
@@ -88,7 +90,7 @@ class GoogleWorkspaceDataSourceTest {
 
         // Assert
         verify { secretProvider.getSecret("folder-id-key") }
-        verify { secretProvider.getSecret("filename-format-key-yyyyMM") }
+        verify { secretProvider.getSecret("google-sheets-filename-format-key") }
     }
 
     @Test

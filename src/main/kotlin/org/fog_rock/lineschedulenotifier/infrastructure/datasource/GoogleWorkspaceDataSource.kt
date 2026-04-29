@@ -27,6 +27,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.GeneralInfoDataSource
 import org.fog_rock.lineschedulenotifier.domain.datasource.ScheduleDataSource
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
@@ -37,7 +38,7 @@ import java.time.format.DateTimeFormatter
 internal class GoogleWorkspaceDataSource(
     private val config: AppConfig,
     private val secretProvider: SecretProvider
-) : ScheduleDataSource, ApplicationDataSource {
+) : ScheduleDataSource, ApplicationDataSource, GeneralInfoDataSource {
     private val logger = LoggerFactory.getLogger(GoogleWorkspaceDataSource::class.java)
 
     companion object {
@@ -93,6 +94,24 @@ internal class GoogleWorkspaceDataSource(
             fetchSheetData(fileId, filename)
         } catch (e: Exception) {
             logger.error("Failed to fetch scheduled data from Google Sheets for month: $yearMonth", e)
+            emptyList()
+        }
+
+    override fun fetchMonthlyGeneralInfoData(yearMonth: YearMonth): List<List<Any>> =
+        try {
+            val folderId = secretProvider.getSecret(config.googleDriveFolderIdKey)
+            val filenameFormat = secretProvider.getSecret(config.googleSheetsGeneralInfoFilenameFormatKey)
+
+            val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(YEAR_MONTH_PATTERN))
+            val filename = filenameFormat.replace(YEAR_MONTH_PATTERN, monthStr)
+
+            val fileId = findFileId(filename, folderId) ?: run {
+                logger.info("General info file not found for month: $monthStr")
+                return emptyList()
+            }
+            fetchSheetData(fileId, filename)
+        } catch (e: Exception) {
+            logger.error("Failed to fetch general info data from Google Sheets for month: $yearMonth", e)
             emptyList()
         }
 

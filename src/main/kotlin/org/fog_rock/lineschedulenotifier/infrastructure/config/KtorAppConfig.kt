@@ -52,6 +52,9 @@ class KtorAppConfig(config: ApplicationConfig) : AppConfig {
     override val googleSheetsFilenameFormatKey: String =
         config.property("app.google.sheets.filename_format_key").getString()
 
+    override val googleSheetsGeneralInfoFilenameFormatKey: String =
+        config.property("app.google.sheets.general_info_filename_format_key").getString()
+
     override val lineBotChannelAccessTokenKey: String =
         config.property("app.line_bot.channel_access_token_key").getString()
 

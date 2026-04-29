@@ -35,6 +35,11 @@ enum class ReplyTrigger(private val regex: Regex) {
     SCHEDULE(
         "schedule|スケジュール|予定".toRegex(RegexOption.IGNORE_CASE)
     ),
+
+    /** Trigger for general information requests. */
+    GENERAL_INFO(
+        "general info|info|rules|やくそく|約束|ルール|お知らせ".toRegex(RegexOption.IGNORE_CASE)
+    ),
     ;
 
     companion object {

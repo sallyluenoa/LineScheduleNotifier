@@ -37,6 +37,7 @@ app:
     sheets:
       spreadsheet_id_key: "GOOGLE_SPREADSHEET_ID"
       filename_format_key: "GOOGLE_SHEETS_FILENAME_FORMAT"
+      general_info_filename_format_key: "GOOGLE_SHEETS_GENERAL_INFO_FILENAME_FORMAT"
   line_bot:
     channel_access_token_key: "LINE_CHANNEL_ACCESS_TOKEN"
     channel_secret_key: "LINE_CHANNEL_SECRET"

@@ -27,6 +27,7 @@ import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
+import org.fog_rock.lineschedulenotifier.domain.provider.GeneralInfoProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
 import org.fog_rock.lineschedulenotifier.domain.service.common.ReplyTrigger
@@ -40,6 +41,7 @@ class LineBotService(
     private val appDataSource: ApplicationDataSource,
     private val messageProvider: MessageProvider,
     private val weeklyScheduleProvider: WeeklyScheduleProvider,
+    private val generalInfoProvider: GeneralInfoProvider,
     lineClient: LineClient,
     verifier: SignatureVerifier
 ) : AbstractLineBotService(lineClient, verifier) {
@@ -75,6 +77,7 @@ class LineBotService(
             ReplyTrigger.USER_ID -> createUserIdMessage(source)
             ReplyTrigger.GROUP_ID -> createGroupIdMessage(source)
             ReplyTrigger.SCHEDULE -> weeklyScheduleProvider.provideMessage()
+            ReplyTrigger.GENERAL_INFO -> generalInfoProvider.provideMessage()
             null -> messageProvider.getMessage(MessageKeys.REPLY_UNKNOWN_COMMAND)
         }
     }

@@ -22,7 +22,9 @@ import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.GeneralInfoDataSource
 import org.fog_rock.lineschedulenotifier.domain.datasource.ScheduleDataSource
+import org.fog_rock.lineschedulenotifier.domain.provider.GeneralInfoProvider
 import org.fog_rock.lineschedulenotifier.domain.service.LineBotService
 import org.fog_rock.lineschedulenotifier.infrastructure.config.KtorAppConfig
 import org.fog_rock.lineschedulenotifier.infrastructure.datasource.GoogleWorkspaceDataSource
@@ -50,9 +52,10 @@ fun appModule(app: Application) = module {
             ProviderMode.CLOUD -> GoogleWorkspaceDataSource(config, get())
             ProviderMode.MOCK -> MockDataSource()
         }
-    } binds arrayOf(ApplicationDataSource::class)
+    } binds arrayOf(ApplicationDataSource::class, GeneralInfoDataSource::class)
     single { WeeklyScheduleProvider(get(), get()) }
-    single { LineBotService(get(), get(), get(), get(), get(), get()) }
+    single { GeneralInfoProvider(get(), get()) }
+    single { LineBotService(get(), get(), get(), get(), get(), get(), get()) }
     single { WebhookRoute(get()) }
     single { PushTriggerRoute(get()) }
 }

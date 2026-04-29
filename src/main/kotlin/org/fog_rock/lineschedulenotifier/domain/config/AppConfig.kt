@@ -37,4 +37,7 @@ import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 
     /** Key for Filename Format of Google Sheets in Secret Manager. */
     val googleSheetsFilenameFormatKey: String
+
+    /** Key for Filename Format of Google Sheets for General Info in Secret Manager. */
+    val googleSheetsGeneralInfoFilenameFormatKey: String
  }

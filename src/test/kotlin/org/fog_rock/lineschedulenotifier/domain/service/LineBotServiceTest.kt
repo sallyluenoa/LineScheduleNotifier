@@ -30,6 +30,7 @@ import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
 import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
 import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
+import org.fog_rock.lineschedulenotifier.domain.provider.GeneralInfoProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,6 +42,7 @@ class LineBotServiceTest {
     private lateinit var config: AppConfig
     private lateinit var appDataSource: ApplicationDataSource
     private lateinit var weeklyScheduleProvider: WeeklyScheduleProvider
+    private lateinit var generalInfoProvider: GeneralInfoProvider
     private lateinit var messageProvider: MessageProvider
     private lateinit var lineClient: LineClient
     private lateinit var verifier: SignatureVerifier
@@ -57,12 +59,13 @@ class LineBotServiceTest {
         }
         appDataSource = mockk(relaxed = true)
         weeklyScheduleProvider = mockk(relaxed = true)
+        generalInfoProvider = mockk(relaxed = true)
         messageProvider = mockk(relaxed = true)
         lineClient = mockk(relaxed = true)
         verifier = mockk(relaxed = true) {
             every { verify(any(), any()) } returns true
         }
-        service = LineBotService(config, appDataSource, messageProvider, weeklyScheduleProvider, lineClient, verifier)
+        service = LineBotService(config, appDataSource, messageProvider, weeklyScheduleProvider, generalInfoProvider, lineClient, verifier)
     }
 
     @Test
@@ -174,6 +177,21 @@ class LineBotServiceTest {
         val body = createWebhookJson(event)
         val expectedReply = "This is the schedule."
         every { weeklyScheduleProvider.provideMessage() } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+    }
+
+    @Test
+    fun testHandleWebhook_replyWithGeneralInfo() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "rules")
+        val body = createWebhookJson(event)
+        val expectedReply = "This is the general info."
+        every { generalInfoProvider.provideMessage() } returns expectedReply
 
         // Act
         service.handleWebhook(body, signature)

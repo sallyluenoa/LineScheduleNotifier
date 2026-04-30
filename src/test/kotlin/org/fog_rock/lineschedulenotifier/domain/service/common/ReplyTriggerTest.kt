@@ -59,10 +59,19 @@ class ReplyTriggerTest {
         assertEquals(setOf(ReplyTrigger.SCHEDULE), ReplyTrigger.fromAll(keyword))
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = [
+        "general info", "info", "rules", "やくそく", "ルール", "持ち物", "約束", "お知らせ",
+        "INFO", "Rules", "  やくそく  ", "tell me the rules"
+    ])
+    fun testFromAll_onlyGeneralInfo_returnGeneralInfoSet(keyword: String) {
+        assertEquals(setOf(ReplyTrigger.GENERAL_INFO), ReplyTrigger.fromAll(keyword))
+    }
+
     @Test
     fun testFromAll_allTriggers_returnAllTriggersSet() {
-        val text = "show my user id, group id, and the 予定"
-        val expected = setOf(ReplyTrigger.USER_ID, ReplyTrigger.GROUP_ID, ReplyTrigger.SCHEDULE)
+        val text = "show my user id, group id, the 予定, and the rules"
+        val expected = setOf(ReplyTrigger.USER_ID, ReplyTrigger.GROUP_ID, ReplyTrigger.SCHEDULE, ReplyTrigger.GENERAL_INFO)
         assertEquals(expected, ReplyTrigger.fromAll(text))
     }
 

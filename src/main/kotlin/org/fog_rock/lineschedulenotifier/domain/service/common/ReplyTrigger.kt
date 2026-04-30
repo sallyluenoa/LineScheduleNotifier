@@ -38,7 +38,7 @@ enum class ReplyTrigger(private val regex: Regex) {
 
     /** Trigger for general information requests. */
     GENERAL_INFO(
-        "general info|info|rules|やくそく|約束|ルール|お知らせ".toRegex(RegexOption.IGNORE_CASE)
+        "general info|info|rules|やくそく|ルール|持ち物|約束|お知らせ".toRegex(RegexOption.IGNORE_CASE)
     ),
     ;
 

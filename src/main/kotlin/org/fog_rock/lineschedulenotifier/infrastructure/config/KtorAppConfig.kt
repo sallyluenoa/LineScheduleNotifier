@@ -43,14 +43,14 @@ class KtorAppConfig(config: ApplicationConfig) : AppConfig {
     override val googleApiCredentialsKey: String =
         config.property("app.google.cloud.credentials_key").getString()
 
-    override val googleSheetsSpreadsheetIdKey: String =
-        config.property("app.google.sheets.spreadsheet_id_key").getString()
+    override val notificationDestinationsSpreadsheetIdKey: String =
+        config.property("app.google.sheets.notification_destinations_spreadsheet_id_key").getString()
 
     override val googleDriveFolderIdKey: String =
         config.property("app.google.drive.folder_id_key").getString()
 
-    override val googleSheetsFilenameFormatKey: String =
-        config.property("app.google.sheets.filename_format_key").getString()
+    override val googleSheetsScheduleFilenameFormatKey: String =
+        config.property("app.google.sheets.schedule_filename_format_key").getString()
 
     override val googleSheetsGeneralInfoFilenameFormatKey: String =
         config.property("app.google.sheets.general_info_filename_format_key").getString()

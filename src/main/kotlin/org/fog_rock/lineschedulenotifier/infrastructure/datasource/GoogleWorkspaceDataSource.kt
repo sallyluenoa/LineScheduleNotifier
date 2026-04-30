@@ -82,7 +82,7 @@ internal class GoogleWorkspaceDataSource(
     override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> =
         try {
             val folderId = secretProvider.getSecret(config.googleDriveFolderIdKey)
-            val filenameFormat = secretProvider.getSecret(config.googleSheetsFilenameFormatKey)
+            val filenameFormat = secretProvider.getSecret(config.googleSheetsScheduleFilenameFormatKey)
 
             val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(YEAR_MONTH_PATTERN))
             val filename = filenameFormat.replace(YEAR_MONTH_PATTERN, monthStr)

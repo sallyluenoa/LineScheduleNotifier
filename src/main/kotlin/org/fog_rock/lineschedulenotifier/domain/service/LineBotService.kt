@@ -49,7 +49,7 @@ class LineBotService(
     private val logger = LoggerFactory.getLogger(LineBotService::class.java)
 
     companion object {
-        // Default range for scheduled push notifications (To, Message)
+        // Default range for scheduled push notifications.
         private const val SHEET_RANGE_PUSH = "push"
     }
 
@@ -104,7 +104,7 @@ class LineBotService(
     }
 
     private fun fetchRecipients(): List<String> {
-        val sheetData = appDataSource.fetchDataByKey(config.googleSheetsSpreadsheetIdKey, SHEET_RANGE_PUSH)
+        val sheetData = appDataSource.fetchDataByKey(config.notificationDestinationsSpreadsheetIdKey, SHEET_RANGE_PUSH)
         if (sheetData.size <= 1) { // Check for header
             logger.info("No recipient data or only header found in sheet.")
             return emptyList()

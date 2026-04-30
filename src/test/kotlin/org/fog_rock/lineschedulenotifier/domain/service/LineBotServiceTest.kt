@@ -55,7 +55,7 @@ class LineBotServiceTest {
     @BeforeEach
     fun setUp() {
         config = mockk(relaxed = true) {
-            every { googleSheetsSpreadsheetIdKey } returns "test_spreadsheet_id_key"
+            every { notificationDestinationsSpreadsheetIdKey } returns "test_spreadsheet_id_key"
         }
         appDataSource = mockk(relaxed = true)
         weeklyScheduleProvider = mockk(relaxed = true)

@@ -44,7 +44,7 @@ class GoogleWorkspaceDataSourceTest {
         config = mockk(relaxed = true) {
             every { googleApiCredentialsKey } returns "google-api-credentials-key"
             every { googleDriveFolderIdKey } returns "folder-id-key"
-            every { googleSheetsFilenameFormatKey } returns "google-sheets-filename-format-key"
+            every { googleSheetsScheduleFilenameFormatKey } returns "google-sheets-schedule-filename-format-key"
             every { googleSheetsGeneralInfoFilenameFormatKey } returns "google-sheets-general-info-filename-format-key"
         }
         secretProvider = mockk(relaxed = true) {
@@ -61,7 +61,7 @@ class GoogleWorkspaceDataSourceTest {
     fun testFetchDataByKey_requestsSpreadsheetId() {
         // Arrange
         val spreadsheetIdKey = "test-spreadsheet-id-key"
-        
+
         // Act
         dataSource.fetchDataByKey(spreadsheetIdKey, "test_range")
 
@@ -92,7 +92,7 @@ class GoogleWorkspaceDataSourceTest {
 
         // Assert
         verify { secretProvider.getSecret("folder-id-key") }
-        verify { secretProvider.getSecret("google-sheets-filename-format-key") }
+        verify { secretProvider.getSecret("google-sheets-schedule-filename-format-key") }
     }
 
     @Test
@@ -112,7 +112,7 @@ class GoogleWorkspaceDataSourceTest {
     fun testFetchMonthlyData_returnsEmptyListOnFilenameFormatFailure() {
         // Arrange
         val yearMonth = YearMonth.of(2026, 4)
-        every { secretProvider.getSecret(config.googleSheetsFilenameFormatKey) } throws RuntimeException("Test Exception")
+        every { secretProvider.getSecret(config.googleSheetsScheduleFilenameFormatKey) } throws RuntimeException("Test Exception")
 
         // Act
         val result = dataSource.fetchMonthlyData(yearMonth)

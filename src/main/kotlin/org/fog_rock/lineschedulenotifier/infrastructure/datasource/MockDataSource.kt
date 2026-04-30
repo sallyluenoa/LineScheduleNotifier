@@ -17,6 +17,7 @@
 package org.fog_rock.lineschedulenotifier.infrastructure.datasource
 
 import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.GeneralInfoDataSource
 import org.fog_rock.lineschedulenotifier.domain.datasource.ScheduleDataSource
 import org.slf4j.LoggerFactory
 import java.time.YearMonth
@@ -24,7 +25,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
+internal class MockDataSource : ScheduleDataSource, ApplicationDataSource, GeneralInfoDataSource {
     private val logger = LoggerFactory.getLogger(MockDataSource::class.java)
 
     override fun fetchDataByKey(spreadsheetIdKey: String, range: String): List<List<Any>> {
@@ -35,6 +36,11 @@ internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
     override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> {
         logger.info("Mock fetchMonthlyData called with yearMonth: $yearMonth")
         return generateMonthlySchedule(yearMonth)
+    }
+
+    override fun fetchMonthlyGeneralInfoData(yearMonth: YearMonth): List<List<Any>> {
+        logger.info("Mock fetchMonthlyGeneralInfoData called with yearMonth: $yearMonth")
+        return generateMonthlyGeneralInfo(yearMonth)
     }
 
     private fun getMockDataForRange(range: String): List<List<Any>> = when (range) {
@@ -74,5 +80,15 @@ internal class MockDataSource : ScheduleDataSource, ApplicationDataSource {
             )
         }
         return monthlyData
+    }
+
+    private fun generateMonthlyGeneralInfo(yearMonth: YearMonth): List<List<Any>> {
+        val monthName = yearMonth.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+        return listOf(
+            listOf("Key", "Value"), // Header
+            listOf("Month", monthName),
+            listOf("Greeting", "Hello! This is a mock general information message for $monthName."),
+            listOf("URL", "https://www.example.com/mock_info_for_${monthName.lowercase()}")
+        )
     }
 }

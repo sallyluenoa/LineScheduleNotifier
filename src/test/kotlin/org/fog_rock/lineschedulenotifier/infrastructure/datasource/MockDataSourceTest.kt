@@ -98,4 +98,25 @@ class MockDataSourceTest {
         assertEquals(yearMonth.atDay(1).format(formatter), result[1][0])
         assertEquals(yearMonth.atDay(expectedDays).format(formatter), result.last()[0])
     }
+
+    @Test
+    fun testFetchMonthlyGeneralInfoData() {
+        val yearMonth = YearMonth.of(2026, 4) // April
+        val result = dataSource.fetchMonthlyGeneralInfoData(yearMonth)
+
+        // Check for header and 3 data rows, all with 2 columns
+        assertEquals(4, result.size)
+        assertTrue(result.all { it.size == 2 })
+
+        // Check header
+        assertEquals(listOf("Key", "Value"), result[0])
+
+        // Check data
+        assertEquals("Month", result[1][0])
+        assertEquals("April", result[1][1])
+        assertEquals("Greeting", result[2][0])
+        assertTrue((result[2][1] as String).contains("April"))
+        assertEquals("URL", result[3][0])
+        assertTrue((result[3][1] as String).contains("april"))
+    }
 }

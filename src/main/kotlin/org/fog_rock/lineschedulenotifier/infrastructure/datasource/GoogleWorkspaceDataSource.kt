@@ -26,8 +26,9 @@ import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
 import org.fog_rock.frlineagent.core.domain.repository.SecretProvider
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
-import org.fog_rock.lineschedulenotifier.domain.repository.ScheduleDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.GeneralInfoDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ScheduleDataSource
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -37,12 +38,11 @@ import java.time.format.DateTimeFormatter
 internal class GoogleWorkspaceDataSource(
     private val config: AppConfig,
     private val secretProvider: SecretProvider
-) : ScheduleDataSource, ApplicationDataSource {
+) : ScheduleDataSource, ApplicationDataSource, GeneralInfoDataSource {
     private val logger = LoggerFactory.getLogger(GoogleWorkspaceDataSource::class.java)
 
     companion object {
-        private const val DATE_FORMAT_PATTERN = "yyyyMM"
-        private const val FILENAME_REPLACE_TARGET = "YYYYMM"
+        private const val YEAR_MONTH_PATTERN = "yyyyMM"
     }
 
     private val credentials by lazy {
@@ -70,13 +70,10 @@ internal class GoogleWorkspaceDataSource(
             .build()
     }
 
-    override fun fetchDataByRange(range: String): List<List<Any>> =
+    override fun fetchDataByKey(spreadsheetIdKey: String, range: String): List<List<Any>> =
         try {
-            val spreadsheetId = secretProvider.getSecret(config.googleSheetsSpreadsheetIdKey)
-            sheetsService.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute()
-                .getValues()
+            val spreadsheetId = secretProvider.getSecret(spreadsheetIdKey)
+            fetchSheetData(spreadsheetId, range)
         } catch (e: Exception) {
             logger.error("Failed to fetch data from Google Sheets. Range: $range", e)
             emptyList()
@@ -85,21 +82,36 @@ internal class GoogleWorkspaceDataSource(
     override fun fetchMonthlyData(yearMonth: YearMonth): List<List<Any>> =
         try {
             val folderId = secretProvider.getSecret(config.googleDriveFolderIdKey)
-            val filenameFormat = secretProvider.getSecret(config.googleSheetsFilenameFormatKey)
+            val filenameFormat = secretProvider.getSecret(config.googleSheetsScheduleFilenameFormatKey)
 
-            val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN))
-            val filename = filenameFormat.replace(FILENAME_REPLACE_TARGET, monthStr)
+            val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(YEAR_MONTH_PATTERN))
+            val filename = filenameFormat.replace(YEAR_MONTH_PATTERN, monthStr)
 
             val fileId = findFileId(filename, folderId) ?: run {
                 logger.info("File not found for month: $monthStr")
                 return emptyList()
             }
-            sheetsService.spreadsheets().values()
-                .get(fileId, filename)
-                .execute()
-                .getValues()
+            fetchSheetData(fileId, filename)
         } catch (e: Exception) {
             logger.error("Failed to fetch scheduled data from Google Sheets for month: $yearMonth", e)
+            emptyList()
+        }
+
+    override fun fetchMonthlyGeneralInfoData(yearMonth: YearMonth): List<List<Any>> =
+        try {
+            val folderId = secretProvider.getSecret(config.googleDriveFolderIdKey)
+            val filenameFormat = secretProvider.getSecret(config.googleSheetsGeneralInfoFilenameFormatKey)
+
+            val monthStr = yearMonth.format(DateTimeFormatter.ofPattern(YEAR_MONTH_PATTERN))
+            val filename = filenameFormat.replace(YEAR_MONTH_PATTERN, monthStr)
+
+            val fileId = findFileId(filename, folderId) ?: run {
+                logger.info("General info file not found for month: $monthStr")
+                return emptyList()
+            }
+            fetchSheetData(fileId, filename)
+        } catch (e: Exception) {
+            logger.error("Failed to fetch general info data from Google Sheets for month: $yearMonth", e)
             emptyList()
         }
 
@@ -123,4 +135,15 @@ internal class GoogleWorkspaceDataSource(
             logger.error("Failed to find file with name '$name' in folder '$folderId'.", e)
             null
         }
+
+    @Throws(IOException::class)
+    private fun fetchSheetData(spreadsheetId: String, range: String): List<List<Any>> =
+        sheetsService.spreadsheets().values()
+            .get(spreadsheetId, range)
+            .execute()
+            .getValues()
+            ?: run {
+                logger.info("No values found in Google Sheets. ID: $spreadsheetId, Range: $range. Returning empty list.")
+                emptyList()
+            }
 }

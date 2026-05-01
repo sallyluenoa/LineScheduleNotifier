@@ -43,36 +43,40 @@ class GoogleWorkspaceDataSourceTest {
     fun setup() {
         config = mockk(relaxed = true) {
             every { googleApiCredentialsKey } returns "google-api-credentials-key"
-            every { googleSheetsSpreadsheetIdKey } returns "spreadsheet-id-key"
             every { googleDriveFolderIdKey } returns "folder-id-key"
-            every { googleSheetsFilenameFormatKey } returns "filename-format-key-YYYYMM"
+            every { googleSheetsScheduleFilenameFormatKey } returns "google-sheets-schedule-filename-format-key"
+            every { googleSheetsGeneralInfoFilenameFormatKey } returns "google-sheets-general-info-filename-format-key"
         }
         secretProvider = mockk(relaxed = true) {
             every { getSecret("google-api-credentials-key") } returns "{}" // Empty JSON for credentials
-            every { getSecret("spreadsheet-id-key") } returns "test-spreadsheet-id"
             every { getSecret("folder-id-key") } returns "test-folder-id"
-            every { getSecret("filename-format-key-YYYYMM") } returns "test-format-YYYYMM"
+            every { getSecret("google-sheets-filename-format-key") } returns "test-format-yyyyMM"
+            every { getSecret("google-sheets-general-info-filename-format-key") } returns "general-info-format-yyyyMM"
         }
 
         dataSource = GoogleWorkspaceDataSource(config, secretProvider)
     }
 
     @Test
-    fun testFetchDataByRange_requestsSpreadsheetId() {
+    fun testFetchDataByKey_requestsSpreadsheetId() {
+        // Arrange
+        val spreadsheetIdKey = "test-spreadsheet-id-key"
+
         // Act
-        dataSource.fetchDataByRange("test_range")
+        dataSource.fetchDataByKey(spreadsheetIdKey, "test_range")
 
         // Assert
-        verify { secretProvider.getSecret("spreadsheet-id-key") }
+        verify { secretProvider.getSecret(spreadsheetIdKey) }
     }
 
     @Test
-    fun testFetchDataByRange_returnsEmptyListOnFailure() {
+    fun testFetchDataByKey_returnsEmptyListOnFailure() {
         // Arrange
-        every { secretProvider.getSecret(config.googleSheetsSpreadsheetIdKey) } throws RuntimeException("Test Exception")
+        val spreadsheetIdKey = "test-spreadsheet-id-key"
+        every { secretProvider.getSecret(spreadsheetIdKey) } throws RuntimeException("Test Exception")
 
         // Act
-        val result = dataSource.fetchDataByRange("test_range")
+        val result = dataSource.fetchDataByKey(spreadsheetIdKey, "test_range")
 
         // Assert
         assertTrue(result.isEmpty())
@@ -88,7 +92,7 @@ class GoogleWorkspaceDataSourceTest {
 
         // Assert
         verify { secretProvider.getSecret("folder-id-key") }
-        verify { secretProvider.getSecret("filename-format-key-YYYYMM") }
+        verify { secretProvider.getSecret("google-sheets-schedule-filename-format-key") }
     }
 
     @Test
@@ -108,10 +112,49 @@ class GoogleWorkspaceDataSourceTest {
     fun testFetchMonthlyData_returnsEmptyListOnFilenameFormatFailure() {
         // Arrange
         val yearMonth = YearMonth.of(2026, 4)
-        every { secretProvider.getSecret(config.googleSheetsFilenameFormatKey) } throws RuntimeException("Test Exception")
+        every { secretProvider.getSecret(config.googleSheetsScheduleFilenameFormatKey) } throws RuntimeException("Test Exception")
 
         // Act
         val result = dataSource.fetchMonthlyData(yearMonth)
+
+        // Assert
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun testFetchMonthlyGeneralInfoData_requestsFolderIdAndFilenameFormat() {
+        // Arrange
+        val yearMonth = YearMonth.of(2026, 4)
+
+        // Act
+        dataSource.fetchMonthlyGeneralInfoData(yearMonth)
+
+        // Assert
+        verify { secretProvider.getSecret("folder-id-key") }
+        verify { secretProvider.getSecret("google-sheets-general-info-filename-format-key") }
+    }
+
+    @Test
+    fun testFetchMonthlyGeneralInfoData_returnsEmptyListOnFolderIdFailure() {
+        // Arrange
+        val yearMonth = YearMonth.of(2026, 4)
+        every { secretProvider.getSecret(config.googleDriveFolderIdKey) } throws RuntimeException("Test Exception")
+
+        // Act
+        val result = dataSource.fetchMonthlyGeneralInfoData(yearMonth)
+
+        // Assert
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun testFetchMonthlyGeneralInfoData_returnsEmptyListOnFilenameFormatFailure() {
+        // Arrange
+        val yearMonth = YearMonth.of(2026, 4)
+        every { secretProvider.getSecret(config.googleSheetsGeneralInfoFilenameFormatKey) } throws RuntimeException("Test Exception")
+
+        // Act
+        val result = dataSource.fetchMonthlyGeneralInfoData(yearMonth)
 
         // Assert
         assertTrue(result.isEmpty())

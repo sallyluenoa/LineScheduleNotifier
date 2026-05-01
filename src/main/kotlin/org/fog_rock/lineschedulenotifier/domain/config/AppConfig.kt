@@ -29,12 +29,15 @@ import org.fog_rock.frlineagent.core.domain.config.ProviderMode
     /** Key for Credentials of Google API in Secret Manager. */
     val googleApiCredentialsKey: String
 
-    /** Key for Spreadsheet ID in Secret Manager. */
-    val googleSheetsSpreadsheetIdKey: String
+    /** Key for Spreadsheet ID for notification destinations in Secret Manager. */
+    val notificationDestinationsSpreadsheetIdKey: String
 
     /** Key for Folder ID of Google Drive in Secret Manager. */
     val googleDriveFolderIdKey: String
 
-    /** Key for Filename Format of Google Sheets in Secret Manager. */
-    val googleSheetsFilenameFormatKey: String
+    /** Key for Filename Format of Google Sheets for Schedule in Secret Manager. */
+    val googleSheetsScheduleFilenameFormatKey: String
+
+    /** Key for Filename Format of Google Sheets for General Info in Secret Manager. */
+    val googleSheetsGeneralInfoFilenameFormatKey: String
  }

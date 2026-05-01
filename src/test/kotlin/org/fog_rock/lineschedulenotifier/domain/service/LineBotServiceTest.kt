@@ -26,15 +26,24 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.MessageType
 import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
+import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
+import org.fog_rock.lineschedulenotifier.domain.provider.GeneralInfoProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class LineBotServiceTest {
 
+    private lateinit var config: AppConfig
     private lateinit var appDataSource: ApplicationDataSource
     private lateinit var weeklyScheduleProvider: WeeklyScheduleProvider
+    private lateinit var generalInfoProvider: GeneralInfoProvider
+    private lateinit var messageProvider: MessageProvider
     private lateinit var lineClient: LineClient
     private lateinit var verifier: SignatureVerifier
     private lateinit var service: LineBotService
@@ -45,42 +54,63 @@ class LineBotServiceTest {
 
     @BeforeEach
     fun setUp() {
+        config = mockk(relaxed = true) {
+            every { notificationDestinationsSpreadsheetIdKey } returns "test_spreadsheet_id_key"
+        }
         appDataSource = mockk(relaxed = true)
         weeklyScheduleProvider = mockk(relaxed = true)
+        generalInfoProvider = mockk(relaxed = true)
+        messageProvider = mockk(relaxed = true)
         lineClient = mockk(relaxed = true)
         verifier = mockk(relaxed = true) {
             every { verify(any(), any()) } returns true
         }
-        service = LineBotService(appDataSource, weeklyScheduleProvider, lineClient, verifier)
+        service = LineBotService(config, appDataSource, messageProvider, weeklyScheduleProvider, generalInfoProvider, lineClient, verifier)
     }
 
     @Test
-    fun testHandleWebhook_replyToUserMessage() {
+    fun testHandleWebhook_noReplyOnBlankMessage() {
         // Arrange
-        val event = createMessageEvent(sourceType = SourceType.USER)
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "   ")
         val body = createWebhookJson(event)
-        every { appDataSource.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
 
         // Act
         service.handleWebhook(body, signature)
 
         // Assert
-        verify(timeout = 5000) { lineClient.reply("replyToken", "Reply Message") }
+        verify(exactly = 0) { lineClient.reply(any(), any()) }
     }
 
     @Test
-    fun testHandleWebhook_replyToGroupMention() {
+    fun testHandleWebhook_replyWithUnknownCommand() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "some unknown command")
+        val body = createWebhookJson(event)
+        val expectedReply = "Sorry, I don't understand that command."
+        every { messageProvider.getMessage(MessageKeys.REPLY_UNKNOWN_COMMAND) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+    }
+
+    @Test
+    fun testHandleWebhook_replyToGroupMentionWithUnknownCommand() {
         // Arrange
         val mentionees = listOf(LineWebhookEvent.Mentionee(0, 5, botId))
-        val event = createMessageEvent(sourceType = SourceType.GROUP, mentionees = mentionees)
+        val event = createMessageEvent(sourceType = SourceType.GROUP, text = "some unknown command", mentionees = mentionees)
         val body = createWebhookJson(event)
-        every { appDataSource.fetchDataByRange("webhook") } returns listOf(listOf("Reply Message"))
+        val expectedReply = "Sorry, I don't understand that command."
+        every { messageProvider.getMessage(MessageKeys.REPLY_UNKNOWN_COMMAND) } returns expectedReply
+
 
         // Act
         service.handleWebhook(body, signature)
 
         // Assert
-        verify(timeout = 5000) { lineClient.reply("replyToken", "Reply Message") }
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
     }
 
     @Test
@@ -109,10 +139,87 @@ class LineBotServiceTest {
         verify(exactly = 0) { lineClient.reply(any(), any()) }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["user id", "user_id", "my id", "ユーザーID"])
+    fun testHandleWebhook_replyWithUserId(keyword: String) {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = keyword)
+        val body = createWebhookJson(event)
+        val expectedReply = "Your User ID is U_USER_ID."
+        every { messageProvider.getMessage(MessageKeys.REPLY_USER_ID, "U_USER_ID") } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+    }
+
+    @Test
+    fun testHandleWebhook_replyWithGroupId() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.GROUP, text = "group_id", mentionees = listOf(LineWebhookEvent.Mentionee(0, 5, botId)))
+        val body = createWebhookJson(event)
+        val expectedReply = "Your Group ID is G_GROUP_ID."
+        every { messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, "G_GROUP_ID") } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+    }
+
+    @Test
+    fun testHandleWebhook_replyWithSchedule() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "schedule")
+        val body = createWebhookJson(event)
+        val expectedReply = "This is the schedule."
+        every { weeklyScheduleProvider.provideMessage() } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+    }
+
+    @Test
+    fun testHandleWebhook_replyWithGeneralInfo() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "rules")
+        val body = createWebhookJson(event)
+        val expectedReply = "This is the general info."
+        every { generalInfoProvider.provideMessage() } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+    }
+
+    @Test
+    fun testHandleWebhook_replyWithMultipleCommandsError() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "user id and schedule")
+        val body = createWebhookJson(event)
+        val expectedReply = "Multiple commands were detected."
+        every { messageProvider.getMessage(MessageKeys.ERROR_MULTIPLE_COMMANDS) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+        verify { messageProvider.getMessage(MessageKeys.ERROR_MULTIPLE_COMMANDS) }
+    }
+
     @Test
     fun testExecutePush_pushNotifications() {
         // Arrange
-        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))
+        every { appDataSource.fetchDataByKey("test_spreadsheet_id_key", "push") } returns listOf(listOf("header"), listOf("user1"), listOf("user2"))
         every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
         every { lineClient.push(any(), any()) } returns Result.success(Unit)
 
@@ -127,7 +234,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_noRecipients() {
         // Arrange
-        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"))
+        every { appDataSource.fetchDataByKey("test_spreadsheet_id_key", "push") } returns listOf(listOf("header"))
         every { weeklyScheduleProvider.provideMessage() } returns "Weekly Schedule"
 
         // Act
@@ -140,7 +247,7 @@ class LineBotServiceTest {
     @Test
     fun testExecutePush_nullMessage() {
         // Arrange
-        every { appDataSource.fetchDataByRange("push") } returns listOf(listOf("header"), listOf("user1"))
+        every { appDataSource.fetchDataByKey("test_spreadsheet_id_key", "push") } returns listOf(listOf("header"), listOf("user1"))
         every { weeklyScheduleProvider.provideMessage() } returns null
 
         // Act
@@ -150,6 +257,46 @@ class LineBotServiceTest {
         verify(exactly = 0) { lineClient.push(any(), any()) }
     }
 
+    @Test
+    fun testHandleWebhook_invalidContextForUserId() {
+        // Arrange
+        val event = createMessageEvent(
+            sourceType = SourceType.GROUP,
+            text = "user id",
+            mentionees = listOf(LineWebhookEvent.Mentionee(0, 5, botId))
+        )
+        val body = createWebhookJson(event)
+        val expectedReply = "Acquisition of user ID is only available in personal chats."
+        every { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_USER_ID) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+        verify { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_USER_ID) }
+    }
+
+    @Test
+    fun testHandleWebhook_invalidContextForGroupId() {
+        // Arrange
+        val event = createMessageEvent(
+            sourceType = SourceType.USER,
+            text = "group id"
+        )
+        val body = createWebhookJson(event)
+        val expectedReply = "Acquisition of group ID is only available in group chats."
+        every { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_GROUP_ID) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+        verify { messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_GROUP_ID) }
+    }
+
+
     private fun createWebhookJson(vararg events: LineWebhookEvent.Event): String {
         val webhook = LineWebhookEvent(botId, events.toList())
         return json.encodeToString(webhook)
@@ -158,17 +305,18 @@ class LineBotServiceTest {
     private fun createMessageEvent(
         sourceType: SourceType = SourceType.USER,
         messageType: MessageType = MessageType.TEXT,
+        text: String = "hello",
         mentionees: List<LineWebhookEvent.Mentionee> = emptyList()
     ): LineWebhookEvent.Event {
         val source = LineWebhookEvent.Source(
             _type = sourceType.value,
-            userId = "U_USER_ID",
+            userId = if (sourceType == SourceType.USER) "U_USER_ID" else null,
             groupId = if (sourceType == SourceType.GROUP) "G_GROUP_ID" else null
         )
         val message = LineWebhookEvent.Message(
             id = "msg1",
             _type = messageType.value,
-            text = "hello",
+            text = text,
             mention = if (mentionees.isNotEmpty()) LineWebhookEvent.Mention(mentionees) else null
         )
         return LineWebhookEvent.Event(

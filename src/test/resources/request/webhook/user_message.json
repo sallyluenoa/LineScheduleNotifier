@@ -6,7 +6,7 @@
       "message": {
         "type": "text",
         "id": "12345678901234",
-        "text": "Hello World!"
+        "text": "schedule"
       },
       "webhookEventId": "01GXXXXXXXXXXXXXXXXX",
       "deliveryContext": {

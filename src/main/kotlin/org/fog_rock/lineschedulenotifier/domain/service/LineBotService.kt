@@ -24,16 +24,24 @@ import org.fog_rock.frlineagent.core.domain.model.webhook.SourceType
 import org.fog_rock.frlineagent.core.domain.service.AbstractLineBotService
 import org.fog_rock.frlineagent.core.domain.service.LineClient
 import org.fog_rock.frlineagent.core.domain.service.SignatureVerifier
+import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
+import org.fog_rock.lineschedulenotifier.domain.message.MessageKeys
+import org.fog_rock.lineschedulenotifier.domain.message.MessageProvider
+import org.fog_rock.lineschedulenotifier.domain.provider.GeneralInfoProvider
 import org.fog_rock.lineschedulenotifier.domain.provider.WeeklyScheduleProvider
-import org.fog_rock.lineschedulenotifier.domain.repository.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.datasource.ApplicationDataSource
+import org.fog_rock.lineschedulenotifier.domain.service.common.ReplyTrigger
 import org.slf4j.LoggerFactory
 
 /**
  * Service class for handling LINE Bot operations.
  */
 class LineBotService(
+    private val config: AppConfig,
     private val appDataSource: ApplicationDataSource,
+    private val messageProvider: MessageProvider,
     private val weeklyScheduleProvider: WeeklyScheduleProvider,
+    private val generalInfoProvider: GeneralInfoProvider,
     lineClient: LineClient,
     verifier: SignatureVerifier
 ) : AbstractLineBotService(lineClient, verifier) {
@@ -41,21 +49,37 @@ class LineBotService(
     private val logger = LoggerFactory.getLogger(LineBotService::class.java)
 
     companion object {
-        // Default range for webhook data retrieval
-        private const val SHEET_RANGE_WEBHOOK = "webhook"
-        // Default range for scheduled push notifications (To, Message)
+        // Default range for scheduled push notifications.
         private const val SHEET_RANGE_PUSH = "push"
     }
 
     override fun createReplyMessage(event: LineWebhookEvent.Event, botId: String): String? {
-        if (!shouldReply(event, botId)) {
+        val source = shouldReply(event, botId) ?: run {
             logger.info("Should not reply to the event.")
             return null
         }
 
-        // Request Data from Sheets
-        val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_WEBHOOK)
-        return sheetData.getOrNull(0)?.getOrNull(0)?.toString()
+        // `shouldReply` ensures that `event.message` is a non-null text message.
+        val messageText = event.message?.text
+        if (messageText.isNullOrBlank()) {
+            logger.warn("Message text is null or blank.")
+            return null
+        }
+
+        val triggers = ReplyTrigger.fromAll(messageText)
+        logger.info("Detected triggers: $triggers for message: '$messageText'")
+
+        if (triggers.size > 1) {
+            return messageProvider.getMessage(MessageKeys.ERROR_MULTIPLE_COMMANDS)
+        }
+
+        return when (triggers.firstOrNull()) {
+            ReplyTrigger.USER_ID -> createUserIdMessage(source)
+            ReplyTrigger.GROUP_ID -> createGroupIdMessage(source)
+            ReplyTrigger.SCHEDULE -> weeklyScheduleProvider.provideMessage()
+            ReplyTrigger.GENERAL_INFO -> generalInfoProvider.provideMessage()
+            null -> messageProvider.getMessage(MessageKeys.REPLY_UNKNOWN_COMMAND)
+        }
     }
 
     override fun createPushNotifications(): List<Notification> {
@@ -80,7 +104,7 @@ class LineBotService(
     }
 
     private fun fetchRecipients(): List<String> {
-        val sheetData = appDataSource.fetchDataByRange(SHEET_RANGE_PUSH)
+        val sheetData = appDataSource.fetchDataByKey(config.notificationDestinationsSpreadsheetIdKey, SHEET_RANGE_PUSH)
         if (sheetData.size <= 1) { // Check for header
             logger.info("No recipient data or only header found in sheet.")
             return emptyList()
@@ -89,32 +113,56 @@ class LineBotService(
         return sheetData.drop(1).mapNotNull { it.getOrNull(0)?.toString() }
     }
 
-    private fun shouldReply(event: LineWebhookEvent.Event, botId: String): Boolean {
+    private fun shouldReply(event: LineWebhookEvent.Event, botId: String): LineWebhookEvent.Source? {
         if (event.eventType != EventType.MESSAGE) {
             logger.info("The event type is not message. eventType: ${event.eventType}")
-            return false
+            return null
         }
         val message = event.message
         if (message?.messageType != MessageType.TEXT) {
             logger.info("The message type is not text. messageType: ${message?.messageType}")
-            return false
+            return null
         }
         val source = event.source
         logger.info("sourceType: ${source?.sourceType}")
         return when (source?.sourceType) {
             SourceType.USER -> {
                 logger.info("Source type is USER. Replying.")
-                true
+                source
             }
             SourceType.GROUP -> {
                 val shouldReplyToGroup = message.mention?.mentionees?.any { it.userId == botId } ?: false
                 logger.info("Source type is GROUP. Bot mentioned: $shouldReplyToGroup")
-                shouldReplyToGroup
+                if (shouldReplyToGroup) source else null
             }
             else -> {
                 logger.info("Source type is ${source?.sourceType}. Not replying.")
-                false
+                null
             }
         }
+    }
+
+    private fun createUserIdMessage(source: LineWebhookEvent.Source): String {
+        // If the user ID cannot be retrieved, output a log, return an error message, and exit the function (Guard-Clause).
+        val userId = source.userId ?: run {
+            logger.warn(
+                "Attempted to get USER_ID in a non-user context. sourceType: ${source.sourceType}"
+            )
+            return messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_USER_ID)
+        }
+        // From here on, it is guaranteed that userId is non-null.
+        return messageProvider.getMessage(MessageKeys.REPLY_USER_ID, userId)
+    }
+
+    private fun createGroupIdMessage(source: LineWebhookEvent.Source): String {
+        // If the group ID cannot be retrieved, output a log, return an error message, and exit the function (Guard-Clause).
+        val groupId = source.groupId ?: run {
+            logger.warn(
+                "Attempted to get GROUP_ID in a non-group context. sourceType: ${source.sourceType}"
+            )
+            return messageProvider.getMessage(MessageKeys.ERROR_INVALID_CONTEXT_FOR_GROUP_ID)
+        }
+        // From here on, it is guaranteed that groupId is non-null.
+        return messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, groupId)
     }
 }

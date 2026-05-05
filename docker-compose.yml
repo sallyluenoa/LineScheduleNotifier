@@ -26,6 +26,7 @@ services:
       dockerfile: Dockerfile
       args:
         - PROJECT_NUMBER=${PROJECT_NUMBER:-111111111111}
+        - APP_LOCALE_LANGUAGE=${APP_LOCALE_LANGUAGE:-en}
       secrets:
         - github_credentials
 
@@ -45,6 +46,7 @@ services:
     # Use mapping style for environment variables.
     environment:
       PROJECT_NUMBER: ${PROJECT_NUMBER:-111111111111}
+      APP_LOCALE_LANGUAGE: ${APP_LOCALE_LANGUAGE:-en}
       GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-credentials.json
 
     # Override the default CMD to pass configuration arguments.

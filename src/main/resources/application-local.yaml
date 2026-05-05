@@ -15,8 +15,6 @@
 #
 
 app:
-  locale:
-    language: "ja"
   provider:
     secret_manager: "mock"
     google_workspace: "mock"

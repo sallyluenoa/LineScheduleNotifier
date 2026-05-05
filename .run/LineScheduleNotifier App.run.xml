@@ -2,6 +2,7 @@
   <configuration default="false" name="LineScheduleNotifier App" type="KtorApplicationConfigurationType" factoryName="Ktor">
     <envs>
       <env name="PROJECT_NUMBER" value="111111111111" />
+      <env name="APP_LOCALE_LANGUAGE" value="ja" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="io.ktor.server.netty.EngineMain" />
     <module name="LineScheduleNotifier.main" />

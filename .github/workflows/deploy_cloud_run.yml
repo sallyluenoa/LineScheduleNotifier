@@ -65,6 +65,9 @@ jobs:
           tags: |
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:${{ github.sha }}
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/${{ env.SERVICE }}:latest
+          build-args: |
+            PROJECT_NUMBER=${{ env.PROJECT_NUMBER }}
+            APP_LOCALE_LANGUAGE=${{ env.APP_LOCALE }}
           secrets: |
             "github_credentials=export GITHUB_USER=${{ github.actor }}
             export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}"

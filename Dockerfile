@@ -51,6 +51,10 @@ WORKDIR /app
 ARG PROJECT_NUMBER=111111111111
 ENV PROJECT_NUMBER=${PROJECT_NUMBER}
 
+# Define the application locale with a default for local development
+ARG APP_LOCALE_LANGUAGE=en
+ENV APP_LOCALE_LANGUAGE=${APP_LOCALE_LANGUAGE}
+
 # Copy only the built JAR file from the build stage
 # Note: Ensure the JAR filename pattern matches your build/libs output
 COPY --from=build /app/build/libs/LineScheduleNotifier-*-all.jar /app/app.jar

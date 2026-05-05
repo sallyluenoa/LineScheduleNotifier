@@ -23,7 +23,7 @@ ktor:
 app:
   name: "LineScheduleNotifier"
   locale:
-    language: "en"
+    language: ${APP_LOCALE_LANGUAGE:-en}
   provider:
     secret_manager: "cloud"
     google_workspace: "cloud"

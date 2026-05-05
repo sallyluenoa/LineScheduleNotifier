@@ -45,6 +45,44 @@ To build the project and create the necessary artifacts, run:
 ./gradlew build
 ```
 
+## Running with Docker (Local)
+
+To verify the Docker image and run the application in a containerized environment locally, use Docker Compose.
+This setup mounts the local `src/main/resources` directory, allowing the container to use `application-local.yaml` for local-specific configurations.
+
+### Authentication for GitHub Packages
+
+This project depends on libraries hosted on GitHub Packages. To build the Docker image locally, you must provide your GitHub credentials so that Gradle can download these dependencies.
+
+1.  **Create a Personal Access Token (PAT)** on GitHub with the `read:packages` scope.
+2.  In the root of the project, create a file named `github-credentials.txt`.
+3.  Add the following content to the file, replacing the placeholders with your actual username and the PAT you just created:
+
+    ```
+    export GITHUB_USER=<Your GitHub Username>
+    export GITHUB_TOKEN=<Your GitHub Personal Access Token>
+    ```
+
+This file is used by `docker-compose.yml` to securely pass the credentials to the Docker build process. It is listed in `.gitignore` and should not be committed to version control.
+
+### Starting the Container
+
+To build the image and start the container, provide the `PROJECT_NUMBER` and optionally the `APP_LOCALE_LANGUAGE` as environment variables.
+
+For example, to run the application in Japanese:
+```shell
+PROJECT_NUMBER=111111111111 APP_LOCALE_LANGUAGE=ja docker compose up --build
+```
+Supported locales are `en` (English) and `ja` (Japanese). If `APP_LOCALE_LANGUAGE` is not specified, it defaults to `en`.
+
+### Stopping the Container
+
+To stop the container and remove the created resources:
+
+```shell
+docker compose down
+```
+
 ## API Endpoint
 
 ### `POST /webhook`

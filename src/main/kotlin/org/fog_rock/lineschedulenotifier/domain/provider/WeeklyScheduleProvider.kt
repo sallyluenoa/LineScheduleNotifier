@@ -23,6 +23,7 @@ import org.fog_rock.lineschedulenotifier.extension.isBetween
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
@@ -54,7 +55,7 @@ class WeeklyScheduleProvider(
      * @return A formatted message string, or null if no schedule is available.
      */
     fun provideMessage(): String? {
-        val today = LocalDate.now()
+        val today = LocalDate.now(ZoneId.of("Asia/Tokyo"))
         val startDate = today.plusDays(1)
         val endDate = today.plusWeeks(1)
 

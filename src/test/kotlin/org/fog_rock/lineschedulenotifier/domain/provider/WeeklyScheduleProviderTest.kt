@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.ZoneId
 
 class WeeklyScheduleProviderTest {
 
@@ -47,7 +48,7 @@ class WeeklyScheduleProviderTest {
     fun setup() {
         // Mock LocalDate.now()
         mockkStatic(LocalDate::class)
-        every { LocalDate.now() } returns today
+        every { LocalDate.now(ZoneId.of("Asia/Tokyo")) } returns today
 
         scheduleDataSource = mockk()
         messageProvider = mockk(relaxed = true) {
@@ -119,7 +120,7 @@ class WeeklyScheduleProviderTest {
                 "May Item"
             )
         )
-        every { LocalDate.now() } returns aprilDate.minusDays(2) // Set today to 2026-04-28 to cross month
+        every { LocalDate.now(ZoneId.of("Asia/Tokyo")) } returns aprilDate.minusDays(2) // Set today to 2026-04-28 to cross month
 
         every { scheduleDataSource.fetchMonthlyData(YearMonth.of(2026, 4)) } returns aprilData
         every { scheduleDataSource.fetchMonthlyData(YearMonth.of(2026, 5)) } returns mayData

@@ -4,6 +4,7 @@ build/
 out/
 .kotlin/
 bin/
+/src/main/resources/version.properties
 
 # Version control
 .git/

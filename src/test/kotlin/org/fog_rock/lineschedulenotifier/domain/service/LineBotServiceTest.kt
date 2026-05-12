@@ -201,6 +201,24 @@ class LineBotServiceTest {
     }
 
     @Test
+    fun testHandleWebhook_replyWithVersion() {
+        // Arrange
+        val event = createMessageEvent(sourceType = SourceType.USER, text = "version")
+        val body = createWebhookJson(event)
+        val testVersion = "1.2.3"
+        val expectedReply = "Version: $testVersion"
+
+        every { config.version } returns testVersion
+        every { messageProvider.getMessage(MessageKeys.REPLY_VERSION_INFO, testVersion) } returns expectedReply
+
+        // Act
+        service.handleWebhook(body, signature)
+
+        // Assert
+        verify(timeout = 5000) { lineClient.reply("replyToken", expectedReply) }
+    }
+
+    @Test
     fun testHandleWebhook_replyWithMultipleCommandsError() {
         // Arrange
         val event = createMessageEvent(sourceType = SourceType.USER, text = "user id and schedule")

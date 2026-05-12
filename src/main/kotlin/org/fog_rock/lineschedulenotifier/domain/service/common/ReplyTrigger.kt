@@ -40,6 +40,11 @@ enum class ReplyTrigger(private val regex: Regex) {
     GENERAL_INFO(
         "general info|info|rules|やくそく|ルール|持ち物|約束|お知らせ".toRegex(RegexOption.IGNORE_CASE)
     ),
+
+    /** Trigger for version requests. */
+    VERSION(
+        "version|バージョン".toRegex(RegexOption.IGNORE_CASE)
+    ),
     ;
 
     companion object {

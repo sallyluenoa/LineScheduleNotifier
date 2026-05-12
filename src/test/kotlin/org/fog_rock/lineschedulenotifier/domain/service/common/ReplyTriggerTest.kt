@@ -68,6 +68,12 @@ class ReplyTriggerTest {
         assertEquals(setOf(ReplyTrigger.GENERAL_INFO), ReplyTrigger.fromAll(keyword))
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["version", "バージョン", "Version", "  version  ", "what is the version?"])
+    fun testFromAll_onlyVersion_returnVersionSet(keyword: String) {
+        assertEquals(setOf(ReplyTrigger.VERSION), ReplyTrigger.fromAll(keyword))
+    }
+
     @Test
     fun testFromAll_allTriggers_returnAllTriggersSet() {
         val text = "show my user id, group id, the 予定, and the rules"

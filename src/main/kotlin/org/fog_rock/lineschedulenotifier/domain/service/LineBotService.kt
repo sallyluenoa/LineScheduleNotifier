@@ -78,6 +78,7 @@ class LineBotService(
             ReplyTrigger.GROUP_ID -> createGroupIdMessage(source)
             ReplyTrigger.SCHEDULE -> weeklyScheduleProvider.provideMessage()
             ReplyTrigger.GENERAL_INFO -> generalInfoProvider.provideMessage()
+            ReplyTrigger.VERSION -> createVersionMessage()
             null -> messageProvider.getMessage(MessageKeys.REPLY_UNKNOWN_COMMAND)
         }
     }
@@ -165,4 +166,7 @@ class LineBotService(
         // From here on, it is guaranteed that groupId is non-null.
         return messageProvider.getMessage(MessageKeys.REPLY_GROUP_ID, groupId)
     }
+
+    private fun createVersionMessage(): String =
+        messageProvider.getMessage(MessageKeys.REPLY_VERSION_INFO, config.version)
 }

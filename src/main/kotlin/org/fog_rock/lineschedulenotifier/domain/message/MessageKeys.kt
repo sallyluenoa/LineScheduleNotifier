@@ -30,6 +30,8 @@ object MessageKeys {
     const val REPLY_USER_ID = "reply.user.id"
     const val REPLY_GROUP_ID = "reply.group.id"
 
+    const val REPLY_VERSION_INFO = "reply.version.info"
+
     const val REPLY_UNKNOWN_COMMAND = "reply.unknown.command"
 
     const val ERROR_INVALID_CONTEXT_FOR_USER_ID = "error.invalidContextForUserId"

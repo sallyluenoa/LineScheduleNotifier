@@ -22,11 +22,11 @@ import org.fog_rock.frlineagent.core.domain.config.ProviderMode
 /**
  * An interface for managing the integration mode with external services.
  */
- interface AppConfig : CoreAppConfig {
-     /** Application version. */
-     val version: String
+interface AppConfig : CoreAppConfig {
+    /** Application version. */
+    val version: String
 
-     /** Mode for Google Workspace. */
+    /** Mode for Google Workspace. */
     val googleWorkspaceMode: ProviderMode
 
     /** Key for Credentials of Google API in Secret Manager. */

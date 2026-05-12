@@ -49,3 +49,6 @@ github-credentials.txt
 .DS_Store?
 ._*
 Thumbs.db
+
+# Generated files
+/src/main/resources/version.properties

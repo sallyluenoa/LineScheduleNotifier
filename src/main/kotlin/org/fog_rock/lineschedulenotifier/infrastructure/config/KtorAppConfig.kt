@@ -19,11 +19,18 @@ package org.fog_rock.lineschedulenotifier.infrastructure.config
 import io.ktor.server.config.ApplicationConfig
 import org.fog_rock.lineschedulenotifier.domain.config.AppConfig
 import org.fog_rock.frlineagent.core.domain.config.ProviderMode
+import java.util.Properties
 
 /**
  * A class that reads AppConfig from a Ktor configuration file.
  */
 class KtorAppConfig(config: ApplicationConfig) : AppConfig {
+
+    private val versionProperties = Properties().apply {
+        javaClass.classLoader.getResourceAsStream("version.properties")?.use(::load)
+    }
+
+    override val version: String = versionProperties.getProperty("version", "Unknown")
 
     override val name: String =
         config.property("app.name").getString()

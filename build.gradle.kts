@@ -53,6 +53,19 @@ tasks.test {
     jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
 }
 
+tasks.register("generateVersionProperties") {
+    doLast {
+        file("src/main/resources/version.properties").apply {
+            if (!exists()) createNewFile()
+            writeText("version=$version")
+        }
+    }
+}
+
+tasks.named("processResources") {
+    dependsOn(tasks.getByName("generateVersionProperties"))
+}
+
 tasks.getByName<Jar>("shadowJar") {
     archiveFileName.set("${project.name}-${project.version}-all.jar")
 }

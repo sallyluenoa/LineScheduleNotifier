@@ -27,7 +27,7 @@ import java.util.Properties
 class KtorAppConfig(config: ApplicationConfig) : AppConfig {
 
     private val versionProperties = Properties().apply {
-        javaClass.classLoader.getResourceAsStream("version.properties")?.use(::load)
+        KtorAppConfig::class.java.classLoader.getResourceAsStream("version.properties")?.use(::load)
     }
 
     override val version: String = versionProperties.getProperty("version", "Unknown")

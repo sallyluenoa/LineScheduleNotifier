@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name: Deploy to Cloud Run
+name: Deploy to Cloud Run (DEV)
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ env:
   SERVICE: 'line-schedule-notifier'
   PROJECT_ID: '${{ vars.GCP_PROJECT_ID_DEV }}'
   PROJECT_NUMBER: '${{ vars.GCP_PROJECT_NUMBER_DEV }}'
-  REGION: '${{ vars.GCP_REGION_DEV }}'
+  REGION: '${{ vars.GCP_REGION }}'
   SERVICE_ACCOUNT: '${{ vars.GCP_SERVICE_ACCOUNT_DEV }}'
   WORKLOAD_IDENTITY_PROVIDER: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_DEV }}'
   APP_LOCALE: '${{ vars.APP_LOCALE }}'

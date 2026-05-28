@@ -20,13 +20,12 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
 
 env:
   SERVICE: 'line-schedule-notifier'
   PROJECT_ID: '${{ vars.GCP_PROJECT_ID_DEMO }}'
   PROJECT_NUMBER: '${{ vars.GCP_PROJECT_NUMBER_DEMO }}'
-  REGION: '${{ vars.GCP_REGION_DEMO }}'
+  REGION: '${{ vars.GCP_REGION }}'
   SERVICE_ACCOUNT: '${{ vars.GCP_SERVICE_ACCOUNT_DEMO }}'
   WORKLOAD_IDENTITY_PROVIDER: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_DEMO }}'
   APP_LOCALE: '${{ vars.APP_LOCALE }}'
